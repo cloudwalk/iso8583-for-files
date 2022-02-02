@@ -6,8 +6,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 #![allow(non_camel_case_types)]
-#![feature(type_ascription)]
-#![feature(test)]
 extern crate bit_array;
 extern crate typenum;
 extern crate yaml_rust;
@@ -17,8 +15,6 @@ extern crate serde_yaml;
 #[macro_use]
 extern crate log;
 
-pub mod iso_msg;
 pub mod iso_field;
+pub mod iso_msg;
 pub mod yaml_specs;
-
-

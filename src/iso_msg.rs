@@ -6,17 +6,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-
-use std::str;
 use bit_array::BitArray;
-use typenum::U128;
-use std::borrow::Cow;
 use iso_field::FieldCharType;
 use iso_field::FieldPayload;
-use iso_field::IsoField;
 use iso_field::FieldSizeType;
-
-
+use iso_field::IsoField;
+use std::borrow::Cow;
+use std::str;
+use typenum::U128;
 
 /// `IsoSpecs` Interface
 /// This defines the Iso8583 message format

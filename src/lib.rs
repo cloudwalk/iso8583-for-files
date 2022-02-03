@@ -5,6 +5,7 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
+#![feature(test)]
 #![allow(non_camel_case_types)]
 extern crate bit_array;
 extern crate typenum;

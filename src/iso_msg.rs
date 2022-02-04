@@ -50,7 +50,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         Ok(())
     }
 
-
     pub fn set_field(&mut self, index: usize, buffer: &[u8]) -> Result<(), &str> {
         trace!(
             "set_field: index:{}, buffer:{}",
@@ -70,7 +69,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             self.iso_spec.get_handle()[index].length
         );
         if len_prefix > 0 {
-
             v.extend_from_slice(format!("{:0w$}", buffer.len(), w = len_prefix).as_bytes());
         }
         v.extend_from_slice(buffer);
@@ -94,7 +92,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
     }
 
     pub fn get_field(&self, index: usize, buffer: &mut [u8]) -> Result<usize, &str> {
-
         let res = self.get_field_raw(index, buffer);
         if res.is_err() {
             return Err(res.err().unwrap());
@@ -125,112 +122,49 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                 }
             }
             return Err("Input buffer is smaller than field value");
-
         }
         if field.len == 0 {
             return Err("Field not set");
         }
         if buffer.len() >= field.len && self.payload.len() >= (field.len + field.index) {
             let len_prefix = self.get_field_length_prefix(index);
-            buffer[0..field.len].copy_from_slice(
-                &self.payload[field.index..
-                                  field.index +
-                                      field.len],
-            );
+            buffer[0..field.len]
+                .copy_from_slice(&self.payload[field.index..field.index + field.len]);
             Ok((field.len, len_prefix))
         } else {
             Err("Input buffer is smaller than field value")
         }
-
-
     }
-
-
 
     pub fn is_bit_set(input: u32, n: u8) -> bool {
-        if n < 32 { input & (1 << n) != 0 } else { false }
+        if n < 32 {
+            input & (1 << n) != 0
+        } else {
+            false
+        }
     }
 
-    pub fn process_bitmap(
-        iso_spec: &IsoSpecs,
-        index: usize,
-        bitmap_bytes: &[u8],
-    ) -> (Vec<BitArray<u64, U128>>, usize) {
+    pub fn process_bitmap(bitmap_bytes: &[u8]) -> Vec<BitArray<u64, U128>> {
+        let bitmap = &bitmap_bytes[0..16]; //this is taking into account that there will always be a secundary bitmap
+        let bit_arrays = vec![BitArray::<u64, U128>::from_bytes(bitmap)];
 
-        let bitmap_length = iso_spec.get_handle()[index].length;
-        let bitmap_size = bitmap_length * 8;
-        let num_iteration: usize = (iso_spec.get_handle().len() - index + 63) / bitmap_size;
-        let i = 0;
-
-        let mut bit_map_index = index;
-        let num_bits = 32; //note: we are using rev() of range e.g (0..num_bits).rev() so 32 would start with 31
-        let mut bit_arrays = Vec::<BitArray<u64, U128>>::with_capacity(num_iteration);
-        for _ in 0..num_iteration {
-            bit_arrays.push(BitArray::<u64, U128>::from_elem(false));
-        }
-
-        let mut bit_arrays_index = 0;
-
-        //let bitmap = unsafe { str::from_utf8_unchecked(bitmap_bytes) };
-        let bitmap = str::from_utf8(bitmap_bytes).unwrap();
-        trace!("index:{}, bitmap:{}", index, bitmap);
-        let mut field_index = 0; //current field index
-        while i < num_iteration {
-
-            //move to the next field
-            if i == 0 {
-                field_index += 1; // skip field index 0. This is to check if bit 31 is set for 2ndory bitmap
-            }
-            let mut ms_num_bit = num_bits;
-            if i == 0 {
-                ms_num_bit -= 1;
-            }
-            let ms = u32::from_str_radix(&bitmap[bit_map_index..bit_map_index + 8], 16).unwrap();
-
-            //  for x in (num_bits..0).rev() {
-            for x in (0..ms_num_bit).rev() {
-                let bit_set = IsoMsg::is_bit_set(ms, x as u8);
-                trace!("ms: bit {} field_index:{} is {}", x, field_index, bit_set);
-                bit_arrays[bit_arrays_index].set(field_index, bit_set);
-                field_index += 1;
-            }
-            trace!("ms: {}", ms);
-            bit_map_index += 8;
-
-            let ls = u32::from_str_radix(&bitmap[bit_map_index..bit_map_index + 8], 16).unwrap();
-            for x in (0..num_bits).rev() {
-                let bit_set = IsoMsg::is_bit_set(ls, x as u8);
-                trace!("ms: bit {} field_index:{} is {}", x, field_index, bit_set);
-                bit_arrays[bit_arrays_index].set(field_index, bit_set);
-                field_index += 1;
-            }
-            bit_map_index += 8;
-            trace!("ls: {}", ls);
-
-
-            bit_arrays_index = field_index / bitmap_size;
-            if i == 0 && !IsoMsg::is_bit_set(ms, 31u8) {
-                // if 2ndory bitmap doesn't exist, comeout
-                trace!("2ndory bitmap doesn't exis");
-                break;
-            }
-        }
-
-
-        (bit_arrays, bit_map_index + index - 8)
-
+        bit_arrays
     }
 
     pub fn convert_u32_be(array: &[u8]) -> u32 {
         assert_eq!(array.len(), 4);
-        (u32::from(array[0]) << 24) + (u32::from(array[1]) << 16) + (u32::from(array[2]) << 8) +
-            (u32::from(array[3]) << 0)
+        (u32::from(array[0]) << 24)
+            + (u32::from(array[1]) << 16)
+            + (u32::from(array[2]) << 8)
+            + (u32::from(array[3]) << 0)
     }
 
     pub fn convert_u32_le(array: &[u8]) -> u32 {
         assert_eq!(array.len(), 4);
-        (u32::from(array[0]) << 0) + (u32::from(array[1]) << 8) + (u32::from(array[2]) << 16) +
-            (u32::from(array[3]) << 24)
+        (u32::from(array[0]) << 0)
+            + (u32::from(array[1]) << 8)
+            + (u32::from(array[2]) << 16)
+            + (u32::from(array[3]) << 24)
     }
 
     pub fn to_byte_array(&self, buffer: &mut [u8]) -> usize {
@@ -262,7 +196,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     buffer_index += field_total_len;
                 }
             } else {
-
                 let res = self.get_field_raw(index, &mut buffer[buffer_index..]);
                 if res.is_ok() {
                     if bitmap_found {
@@ -293,7 +226,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                 let ms_str = IsoMsg::convert_u32_be(&bytes[byte_index..byte_index + 4]);
                 byte_index += 4;
                 bitmap.push_str(&format!("{:08X}", ms_str));
-
             }
         }
         buffer[bit_index..bitmap.len() + bit_index]
@@ -325,18 +257,20 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             let iso_field: &IsoField = &iso_spec.get_handle()[i];
 
             let mut field = FieldPayload::default();
-            if !found_bitmap &&
-                (iso_field.char_type == FieldCharType::Iso8583_bmp ||
-                     iso_field.char_type == FieldCharType::Iso8583_bmps)
-            {
+
+            let is_a_bitmap = !found_bitmap
+                && (iso_field.char_type == FieldCharType::Iso8583_bmp
+                    || iso_field.char_type == FieldCharType::Iso8583_bmps);
+
+            if is_a_bitmap {
                 found_bitmap = true;
                 field.index = payload_index;
 
                 field.exist = true;
                 bitmap_field_index = i;
 
-                let (bitarrays, len) = IsoMsg::process_bitmap(iso_spec, field.index, input_buffer);
-                field.len = len;
+                let bitarrays = IsoMsg::process_bitmap(&input_buffer[4..4 + 16]);
+                field.len = 12;
                 bit_arrays = bitarrays;
                 payload_index += field.len; //(iso_field.length * len/16);
                 trace!(
@@ -344,11 +278,10 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     iso_field.length,
                     field.index,
                     payload_index,
-                    str::from_utf8(&input_buffer[field.index..len + field.index]).unwrap()
+                    str::from_utf8(&input_buffer[field.index..field.len + field.index]).unwrap()
                 );
 
                 trace!("bit_arrays:{}", bit_arrays.len());
-
             } else {
                 let mut field_exist = true; //until bitmap found, assume field exist
                 if found_bitmap {
@@ -375,8 +308,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             }
 
             fields.push(field)
-
-
         }
     }
 }
@@ -578,8 +509,8 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
             } else {
                 num_bits = 31;
             }
-            let mut ms = u32::from_str_radix(&bitmap[bit_map_index..bit_map_index + 8], 16)
-                .unwrap();
+            let mut ms =
+                u32::from_str_radix(&bitmap[bit_map_index..bit_map_index + 8], 16).unwrap();
 
             //  for x in (num_bits..0).rev() {
             for x in (0..num_bits).rev() {
@@ -588,8 +519,8 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
                 field_index += 1;
             }
             bit_map_index += 8;
-            let mut ls = u32::from_str_radix(&bitmap[bit_map_index..bit_map_index + 8], 16)
-                .unwrap();
+            let mut ls =
+                u32::from_str_radix(&bitmap[bit_map_index..bit_map_index + 8], 16).unwrap();
 
             for x in (0..num_bits).rev() {
                 //for x in (num_bits..0).step_by(-1) {
@@ -599,25 +530,7 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
             if i == 0 && !is_bit_set(ms, 31u8) {
                 break;
             }
-
         }
-
-
-    }
-
-    #[test]
-    fn process_bitmap_test() {
-        let bitmap = "0010F2246481087088360000000000000004";
-        let handle = AuthSpecs::new();
-        let (bit_arrays, _) = IsoMsg::process_bitmap(&handle, 1, bitmap.as_bytes());
-        assert_eq!(bit_arrays.len(), 1);
-        // let mut field_index =2;
-       /*
-        for (i, item) in bit_arrays[0].iter().enumerate() {
-            if (item) {
-                print!("{}, ", i+2 );
-            }
-        }*/
     }
 
     #[test]
@@ -634,7 +547,101 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
         trace!("Fields length:{}", fields.len());
 
         IsoMsg::from_byte_array(&iso_spec, &mut fields, payload.as_bytes());
+    }
 
+    #[test]
+    fn parse_bitmap_binary() {
+        let bitmap: &[u8] = &[128, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0];
+        let handle = AuthSpecs::new();
+        let bit_arrays = IsoMsg::process_bitmap(bitmap);
+        assert_eq!(format!("{:?}", bit_arrays), "[10000000000000000000000100000000000000000000000100000000000000000000001000000000000000000000000000000000000000000000000000000000]");
+    }
+
+    #[test]
+    fn parse_file_binary() {
+        let payload: &[u8] = &[
+            49, 54, 52, 52, 128, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 54, 57, 55, 48, 52,
+            48, 48, 49, 48, 53, 48, 50, 53, 48, 48, 50, 50, 50, 48, 50, 48, 49, 48, 48, 48, 48, 48,
+            48, 50, 51, 51, 55, 57, 48, 53, 48, 54, 55, 48, 49, 50, 50, 48, 48, 49, 80, 48, 48, 48,
+            48, 48, 48, 48, 49, 49, 50, 52, 48, 252, 144, 7, 195, 132, 97, 224, 2, 2, 0, 0, 4, 0,
+            0, 0, 0, 49, 54, 53, 51, 52, 54, 57, 54, 42, 42, 42, 42, 42, 42, 48, 53, 53, 48, 48,
+            48, 51, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 49, 57, 56, 48, 48, 48, 48, 48, 48,
+            48, 48, 48, 49, 57, 56, 48, 48, 48, 48, 48, 48, 48, 48, 48, 49, 57, 56, 48, 54, 49, 48,
+            48, 48, 48, 48, 48, 50, 50, 48, 50, 48, 49, 48, 52, 48, 52, 51, 51, 48, 48, 48, 50, 53,
+            48, 83, 49, 57, 48, 48, 67, 48, 48, 48, 50, 48, 48, 49, 52, 48, 49, 53, 54, 57, 49, 50,
+            51, 50, 50, 55, 49, 48, 49, 48, 50, 48, 51, 50, 57, 57, 48, 54, 56, 53, 50, 53, 54, 55,
+            51, 48, 48, 54, 50, 55, 49, 48, 49, 48, 49, 49, 48, 48, 48, 48, 48, 48, 50, 51, 51, 55,
+            57, 55, 57, 51, 53, 51, 53, 50, 57, 54, 49, 50, 50, 53, 56, 48, 48, 48, 49, 50, 48, 32,
+            57, 57, 70, 65, 77, 32, 83, 84, 79, 82, 69, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
+            32, 92, 65, 118, 101, 110, 105, 100, 97, 32, 66, 114, 105, 103, 97, 100, 101, 105, 114,
+            111, 32, 74, 111, 115, 101, 32, 86, 105, 99, 101, 110, 116, 101, 32, 100, 101, 32, 70,
+            97, 114, 105, 97, 32, 76, 105, 109, 97, 32, 32, 92, 84, 97, 117, 98, 97, 116, 101, 32,
+            32, 32, 32, 32, 92, 49, 50, 48, 55, 48, 48, 48, 48, 32, 32, 83, 80, 32, 66, 82, 65, 49,
+            50, 49, 48, 48, 48, 50, 48, 48, 51, 77, 66, 75, 48, 48, 48, 51, 48, 48, 51, 77, 66, 75,
+            48, 48, 50, 51, 48, 48, 51, 67, 84, 54, 48, 48, 53, 50, 48, 48, 51, 49, 50, 49, 48, 49,
+            52, 54, 48, 51, 54, 48, 48, 49, 57, 48, 49, 57, 56, 54, 48, 48, 48, 48, 48, 48, 48, 48,
+            48, 48, 48, 53, 57, 56, 54, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 49, 52,
+            56, 48, 48, 52, 57, 56, 54, 50, 48, 49, 53, 56, 48, 49, 50, 32, 32, 32, 32, 32, 32, 32,
+            32, 32, 32, 75, 77, 48, 49, 54, 53, 48, 48, 49, 77, 57, 56, 54, 57, 56, 54, 57, 56, 54,
+            48, 49, 54, 32, 77, 66, 75, 54, 80, 52, 73, 57, 83, 48, 50, 48, 49, 32, 32, 48, 48, 48,
+            48, 48, 48, 48, 50, 49, 49, 48, 48, 48, 48, 48, 48, 50, 51, 51, 55, 57, 49, 54, 52, 52,
+            128, 0, 1, 0, 128, 1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 54, 57, 54, 49, 49, 48, 48, 48, 48,
+            48, 48, 50, 51, 51, 55, 57, 48, 56, 53, 48, 53, 48, 49, 48, 49, 54, 57, 57, 48, 48, 48,
+            57, 57, 56, 48, 48, 48, 48, 48, 48, 48, 50, 48, 54, 54, 51, 48, 53, 53, 52, 48, 55, 48,
+            48, 48, 48, 48, 48, 48, 48, 57, 57, 48, 48, 48, 53, 48, 49, 48, 48, 48, 48, 48, 48, 48,
+            48, 49, 57, 56, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+            48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 51, 49, 49, 48, 48, 48, 48, 48,
+            48, 50, 51, 51, 55, 57, 49, 50, 52, 48, 252, 144, 7, 195, 133, 225, 226, 2, 2, 0, 0, 4,
+            0, 0, 0, 0, 49, 54, 53, 52, 49, 53, 53, 53, 42, 42, 42, 42, 42, 42, 48, 53, 56, 53, 48,
+            48, 51, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 57, 57, 48, 48, 48, 48, 48, 48, 48,
+            48, 48, 48, 57, 57, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 57, 57, 48, 48, 54, 49, 48,
+            48, 48, 48, 48, 48, 50, 50, 48, 50, 48, 49, 48, 52, 53, 52, 50, 50, 77, 48, 48, 49, 48,
+            49, 67, 49, 57, 48, 48, 67, 48, 48, 48, 50, 48, 48, 49, 52, 48, 49, 55, 53, 50, 51, 50,
+            51, 50, 50, 55, 49, 48, 49, 48, 50, 48, 51, 50, 57, 57, 48, 54, 56, 53, 50, 53, 55, 49,
+            50, 54, 48, 54, 50, 55, 49, 48, 49, 48, 49, 49, 48, 48, 48, 48, 48, 48, 50, 51, 51, 55,
+            57, 48, 52, 49, 49, 57, 56, 50, 48, 49, 54, 78, 48, 54, 52, 48, 54, 52, 50, 53, 49, 56,
+            51, 51, 55, 56, 48, 48, 48, 49, 48, 55, 32, 57, 57, 78, 65, 84, 73, 79, 78, 32, 80, 65,
+            82, 75, 32, 69, 83, 84, 65, 67, 73, 79, 78, 65, 92, 65, 118, 101, 110, 105, 100, 97,
+            32, 82, 111, 99, 104, 97, 32, 80, 111, 109, 98, 111, 32, 32, 32, 32, 32, 32, 32, 32,
+            32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 92, 83,
+            97, 111, 32, 74, 111, 115, 101, 32, 100, 111, 115, 92, 56, 51, 48, 49, 48, 54, 50, 48,
+            32, 32, 80, 82, 32, 66, 82, 65, 49, 49, 49, 48, 48, 48, 50, 48, 48, 51, 77, 80, 76, 48,
+            48, 48, 51, 48, 48, 51, 77, 80, 76, 48, 48, 50, 51, 48, 48, 51, 78, 65, 32, 48, 49, 52,
+            54, 48, 51, 54, 48, 48, 49, 57, 48, 49, 57, 56, 54, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+            48, 48, 53, 57, 56, 54, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 49, 52, 56,
+            48, 48, 52, 57, 56, 54, 50, 48, 49, 53, 56, 48, 49, 50, 32, 32, 32, 32, 32, 32, 32, 32,
+            32, 32, 49, 49, 48, 49, 54, 53, 48, 48, 49, 77, 57, 56, 54, 57, 56, 54, 57, 56, 54, 49,
+            50, 48, 159, 3, 6, 0, 0, 0, 0, 0, 0, 159, 53, 1, 34, 95, 42, 2, 9, 134, 130, 2, 57, 0,
+            149, 5, 0, 0, 0, 128, 0, 154, 3, 34, 2, 1, 156, 1, 0, 159, 2, 6, 0, 0, 0, 0, 153, 0,
+            159, 16, 18, 2, 16, 167, 64, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 159, 26, 2, 0,
+            118, 159, 39, 1, 128, 159, 52, 3, 68, 3, 2, 159, 54, 2, 1, 29, 159, 51, 3, 32, 208,
+            232, 159, 38, 8, 46, 164, 187, 61, 252, 133, 47, 79, 159, 55, 4, 222, 71, 191, 105,
+            132, 7, 160, 0, 0, 0, 4, 16, 16, 48, 49, 54, 32, 77, 80, 76, 54, 83, 73, 88, 56, 83,
+            48, 50, 48, 49, 32, 32, 48, 48, 48, 48, 48, 48, 48, 52, 49, 49, 48, 48, 48, 48, 48, 48,
+            50, 51, 51, 55, 57, 49, 54, 52, 52, 128, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0,
+            54, 57, 53, 48, 55, 56, 48, 49, 48, 53, 48, 50, 53, 48, 48, 50, 50, 50, 48, 50, 48, 49,
+            48, 48, 48, 48, 48, 48, 50, 51, 51, 55, 57, 48, 53, 48, 54, 55, 48, 49, 50, 50, 48, 48,
+            49, 80, 48, 51, 48, 49, 48, 49, 54, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+            48, 48, 48, 48, 51, 48, 54, 48, 48, 56, 48, 48, 48, 48, 48, 48, 48, 53, 48, 48, 48, 48,
+            48, 48, 48, 53,
+        ];
+        let handle = AuthSpecs::new();
+        let mut iso_msg = IsoMsg::new(&handle, payload);
+        //XXX como a mensagem ja vai em byte, eh preparar o bitmap pra receber -48 talvez?
+        let mut buffer = [0u8; 1024];
+        {
+            let res = iso_msg.get_field(0, &mut buffer);
+            assert_eq!(res.unwrap(), 4);
+            trace!("mti: {}", str::from_utf8(&buffer[..4]).unwrap());
+            assert_eq!(&buffer[..4], "1644".as_bytes());
+        }
+
+        {
+            let res = iso_msg.get_field(2, &mut buffer);
+            assert_eq!(res.unwrap(), 4);
+            trace!("mti: {}", str::from_utf8(&buffer[..4]).unwrap());
+            assert_eq!(&buffer[..4], "1644".as_bytes());
+        }
     }
 
     #[test]
@@ -685,8 +692,6 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
             let res = iso_msg.get_field(0, &mut buffer);
             assert_eq!(res.unwrap(), 4);
             assert_eq!(&buffer[..4], "0110".as_bytes());
-
-
         }
 
         {
@@ -709,10 +714,7 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
                 assert_eq!(&buffer[..4], "0110".as_bytes());
             }
         }
-
     }
-
-
 
     #[test]
     fn iso_to_byte_array_test() {
@@ -724,8 +726,6 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
         assert_eq!(payload.len(), total_size);
         assert_eq!(str::from_utf8(&buffer[0..total_size]).unwrap(), payload);
     }
-
-
 
     #[test]
     fn iso_auth_req_test() {
@@ -753,7 +753,6 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
             assert_eq!(res, Ok(()));
         }
 
-
         //set the response code
         {
             let response_code = String::from("00");
@@ -776,8 +775,6 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
             );
         }
 
-
-
         //remove 126  (it remove last character set:4 in the bitmap )
         {
             let res = iso_msg.remove_field(126); // set token expiry as pan expiry
@@ -789,23 +786,19 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
             let total_size = iso_msg.to_byte_array(&mut out_buffer);
             assert!(total_size > 0);
 
-
             // assert_eq!(out_len as usize, tiso_msg_byte_array.len());
             //  assert_eq!(
             //      str::from_utf8(&out_buffer[4..36 as usize]).unwrap(), /*/*F2246481087088360000000000000004*/*/
             //      "F22464810A7088B60000000000000000"
             //  );
-
         }
 
         //set DE44: CVI2 Results Code = M
         {
-
             let result_code = "          M";
             let res1 = iso_msg.set_field(44, result_code.as_bytes()); // set token expiry as pan expiry
             assert_eq!(res1, Ok(()));
         }
-
 
         let tiso_msg_responsebyte_array = "0110F22464810A708836000000000000000001612345672297417250030000000000001311204212825117816220258128400105900641931071281500774300555555555555888Test Merchant         Richmond1    51USA011          M8402001010000000000014510002329467890120100  0005400214000000000001231234000108000000002";
         let total_size = iso_msg.to_byte_array(&mut out_buffer);
@@ -826,7 +819,6 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
         b.iter(|| {
             let _iso_msg = IsoMsg::new(&handle, payload.as_bytes());
         });
-
     }
     #[bench]
     fn bench_iso_msg_to_bytearray(b: &mut Bencher) {
@@ -835,7 +827,9 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
         let iso_msg = IsoMsg::new(&handle, payload.as_bytes());
         let mut buffer = [0u8; 1024];
         let mut total_size = 0;
-        b.iter(|| { total_size = iso_msg.to_byte_array(&mut buffer); });
+        b.iter(|| {
+            total_size = iso_msg.to_byte_array(&mut buffer);
+        });
         assert_eq!(payload.len(), total_size);
         assert_eq!(str::from_utf8(&buffer[0..total_size]).unwrap(), payload);
     }
@@ -853,9 +847,4 @@ IsoField::new("Message Authentication Code Field",FieldCharType::Iso8583_b  ,  8
         assert_eq!(payload.len(), total_size);
         assert_eq!(str::from_utf8(&buffer[0..total_size]).unwrap(), payload);
     }
-
-
-
-
-
 }

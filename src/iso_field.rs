@@ -6,7 +6,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum FieldCharType {
     Iso8583_n,
@@ -56,7 +55,6 @@ impl FieldCharType {
             &FieldCharType::ISO8583_z => "z",
             &FieldCharType::Iso8583_bmp => "bmp",
             &FieldCharType::Iso8583_bmps => "bmps",
-
         }
     }
 }
@@ -121,7 +119,7 @@ impl IsoField {
 }
 
 /// Field Payload
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct FieldPayload {
     pub exist: bool,
     pub index: usize,

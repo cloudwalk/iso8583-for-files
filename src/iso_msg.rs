@@ -91,6 +91,10 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         }
     }
 
+    pub fn present_fields(&self) -> Vec<&FieldPayload> {
+        self.fields.iter().filter(|f| f.exist).collect()
+    }
+
     pub fn get_field(&self, index: usize, buffer: &mut [u8]) -> Result<usize, &str> {
         let res = self.get_field_raw(index, buffer);
         if res.is_err() {

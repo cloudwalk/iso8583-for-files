@@ -86,7 +86,9 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
     pub fn get_field_length_prefix(&self, index: usize) -> usize {
         match self.iso_spec.get_handle()[index].size_type {
-            FieldSizeType::LlVar | FieldSizeType::LllVar | FieldSizeType::LlllVar => 3,
+            FieldSizeType::LlVar => 2,
+            FieldSizeType::LllVar => 3,
+            FieldSizeType::LlllVar => 4,
             _ => 0,
         }
     }

@@ -240,9 +240,18 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
     pub fn get_field_length(iso_field: &IsoField, input_buffer: &[u8]) -> usize {
         match iso_field.size_type {
             FieldSizeType::Fixed => iso_field.length,
-            FieldSizeType::LlVar | FieldSizeType::LllVar | FieldSizeType::LlllVar => {
+            FieldSizeType::LlVar => {
+                dbg!(&input_buffer);
+                let str_digits = unsafe { str::from_utf8_unchecked(&input_buffer[0..2]) };
+                usize::from_str_radix(str_digits, 10).unwrap() + 2
+            }
+            FieldSizeType::LllVar => {
                 let str_digits = unsafe { str::from_utf8_unchecked(&input_buffer[0..3]) };
                 usize::from_str_radix(str_digits, 10).unwrap() + 3
+            }
+            FieldSizeType::LlllVar => {
+                let str_digits = unsafe { str::from_utf8_unchecked(&input_buffer[0..4]) };
+                usize::from_str_radix(str_digits, 10).unwrap() + 4
             }
             _ => 0,
         }

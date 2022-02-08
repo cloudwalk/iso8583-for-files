@@ -28,6 +28,23 @@ pub struct IsoMsg<'a, 'b> {
     fields: Vec<FieldPayload>,
 }
 
+impl fmt::Debug for IsoMsg<'_, '_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let result: String = self
+            .present_fields()
+            .iter()
+            .fold("".to_string(), |acc, &x| {
+                format!(
+                    "{} \n {:?} \n values: {:?} \n",
+                    acc,
+                    x.iso_field_label.clone().expect("cannot open field label"),
+                    String::from_utf8_lossy(x.iso_field_value(self.payload.deref()))
+                )
+            });
+        write!(f, "{}", result)
+    }
+}
+
 impl<'a, 'b> IsoMsg<'a, 'b> {
     pub fn new(iso_spec: &'b IsoSpecs, payload: &'a [u8]) -> IsoMsg<'a, 'b> {
         let mut fields = Vec::with_capacity(iso_spec.get_handle().len());

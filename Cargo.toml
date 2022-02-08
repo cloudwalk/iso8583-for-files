@@ -1,9 +1,8 @@
 [package]
 name = "iso8583"
-version = "0.1.1"
+version = "1.0.0"
 authors = ["Rohit Joshi <rohit.joshi@rohit.c.joshi.com>"]
-
-
+edition = "2018"
 license = "MIT/Apache-2.0"
 description = "Library to Parse ISO-8583 messages"
 homepage = "https://github.com/rohitjoshi/iso8583"
@@ -22,7 +21,5 @@ codecov = { repository = "rohitjoshi/iso8583", branch = "master", service = "git
 log = "0.3.8"
 bit-array="0.4.4"
 typenum= "1.9.0"
-yaml-rust="0.4.0"
 serde = "1.0"
 serde_derive = "1.0"
-serde_yaml = "0.7"

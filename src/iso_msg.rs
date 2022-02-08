@@ -12,6 +12,8 @@ use iso_field::FieldPayload;
 use iso_field::FieldSizeType;
 use iso_field::IsoField;
 use std::borrow::Cow;
+use std::fmt;
+use std::ops::Deref;
 use std::str;
 use typenum::U128;
 

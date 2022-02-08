@@ -56,10 +56,12 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         IsoMsg {
             iso_spec: iso_spec,
             payload: Cow::Borrowed(payload),
-
-            //bitmap : BitArray::<u8, U128>::from_elem(false),
             fields: fields,
         }
+    }
+
+    pub fn length(&self) -> usize {
+        self.present_fields().iter().map(|&x| x.len).sum()
     }
 
     pub fn remove_field(&mut self, index: usize) -> Result<(), &str> {

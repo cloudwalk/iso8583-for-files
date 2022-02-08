@@ -121,19 +121,14 @@ impl IsoField {
 /// Field Payload
 #[derive(Debug, Default)]
 pub struct FieldPayload {
+    pub iso_field_label: Option<String>,
     pub exist: bool,
     pub index: usize,
     pub len: usize,
-    pub new_payload: Option<Vec<u8>>,
 }
 
-/// Field Payload impl
 impl FieldPayload {
-    pub fn get_new_payload_length(&self) -> usize {
-        if let Some(ref m) = self.new_payload {
-            return m.len();
-        } else {
-            return 0;
-        }
+    pub fn iso_field_value<'a>(&self, buffer: &'a [u8]) -> &'a [u8] {
+        &buffer[self.index..self.index + self.len]
     }
 }

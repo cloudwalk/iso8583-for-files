@@ -310,14 +310,14 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     field.index = payload_index;
                     field.len = IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
                     //TODO move this debugging for when there is an error/panic
-                    println!(
-                        "label: {:?}\nContent: {:?}\nLength: {:?}\n",
-                        iso_field.label.clone(),
-                        String::from_utf8_lossy(
-                            &input_buffer[payload_index..payload_index + field.len]
-                        ),
-                        field.len
-                    );
+                    //println!(
+                    //    "label: {:?}\nContent: {:?}\nLength: {:?}\n",
+                    //    iso_field.label.clone(),
+                    //    String::from_utf8_lossy(
+                    //        &input_buffer[payload_index..payload_index + field.len]
+                    //    ),
+                    //    field.len
+                    //);
                     field.exist = true;
                     payload_index += field.len;
                 }

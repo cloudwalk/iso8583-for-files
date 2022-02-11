@@ -1,9 +1,6 @@
 use super::*;
-use std::{str, u32};
-use typenum::U128;
 
 use iso_field::FieldCharType;
-use iso_field::FieldPayload;
 use iso_field::FieldSizeType;
 use iso_field::IsoField;
 

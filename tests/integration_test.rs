@@ -1,5 +1,4 @@
 use iso8583::iso_msg::IsoMsg;
-use iso8583::iso_specs::IsoSpecs;
 use std::fs::File;
 use std::io::Read;
 
@@ -11,11 +10,27 @@ fn parse_bitmap_binary() {
 }
 
 #[test]
-fn parse_file_binary() {
-    let mut f = File::open("tests/R111_sample.ipm").expect("no file found");
-    let metadata = std::fs::metadata("tests/R111_sample.ipm").expect("unable to read metadata");
-    let mut payload = vec![0; metadata.len() as usize];
-    f.read(&mut payload).expect("buffer overflow");
+fn parse_r111_binary_to_json() {
+    let file_name = "tests/R111_sample.ipm";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
-    let parsed_messages: Vec<iso8583::ParsedMessage> = iso8583::parse_file(&payload);
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let gg: Vec<iso8583::Group> = iso8583::parse_file(&payload).unwrap();
+}
+
+#[test]
+fn parse_r111_binary() {
+    let file_name = "tests/R111_sample.ipm";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let _: Vec<iso8583::Group> = iso8583::parse_file(&payload).unwrap();
 }

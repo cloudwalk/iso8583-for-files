@@ -294,29 +294,19 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     field.exist = true;
                     bitmap_field_index = i;
 
-                    let bitarrays = IsoMsg::process_bitmap(&input_buffer[4..4 + 16]);
+                    bit_arrays = IsoMsg::process_bitmap(&input_buffer[4..4 + 16]);
                     field.len = 16; //We are considering a secundary bitmap here
-                    bit_arrays = bitarrays;
                     payload_index += field.len; //(iso_field.length * len/16);
                 }
                 _ => {
                     let field_exist = bit_arrays[0].get(i - bitmap_field_index).unwrap();
 
                     if field_exist {
-                        trace!("Field {} exists.", i);
-                        field.index = payload_index;
-                        field.len =
-                            IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
-                        //TODO move this debugging for when there is an error/panic
-                        println!(
-                            "label: {:?}\nContent: {:?}\nLength: {:?}\n",
-                            iso_field.label.clone(),
-                            String::from_utf8_lossy(
-                                &input_buffer[payload_index..payload_index + field.len]
-                            ),
-                            field.len
+                        field = IsoMsg::create_field(
+                            payload_index,
+                            iso_field,
+                            &input_buffer[payload_index..],
                         );
-                        field.exist = true;
                         payload_index += field.len;
                     }
                 }
@@ -336,14 +326,14 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         field.index = payload_index;
         field.len = IsoMsg::get_field_length(iso_field, remaining_input_buffer);
         //TODO move this debugging for when there is an error/panic
-        println!(
-            "label: {:?}\nContent: {:?}\nLength: {:?}\n",
-            iso_field.label.clone(),
-            String::from_utf8_lossy(
-                &remaining_input_buffer[payload_index..payload_index + field.len]
-            ),
-            field.len
-        );
+        //println!(
+        //    "label: {:?}\nContent: {:?}\nLength: {:?}\n",
+        //    iso_field.label.clone(),
+        //    String::from_utf8_lossy(
+        //        &remaining_input_buffer[payload_index..payload_index + field.len]
+        //    ),
+        //    field.len
+        //);
         field.exist = true;
         field
     }

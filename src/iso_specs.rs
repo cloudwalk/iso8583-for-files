@@ -24,7 +24,7 @@ impl IsoSpecs {
         let h = vec![
             IsoField::new(
                 "Message Type Indicator",
-                FieldCharType::Iso8583_ns,
+                FieldCharType::Iso8583_mti,
                 4,
                 FieldSizeType::Fixed,
             ), // Message Type Indicator

@@ -19,6 +19,7 @@ pub enum FieldCharType {
     Iso8583_b,
     ISO8583_z,
     Iso8583_bmps,
+    Iso8583_mti,
 }
 
 impl FieldCharType {
@@ -35,6 +36,7 @@ impl FieldCharType {
             "b" => Some(FieldCharType::Iso8583_b),
             "z" => Some(FieldCharType::ISO8583_z),
             "bmps" => Some(FieldCharType::Iso8583_bmps),
+            "mti" => Some(FieldCharType::Iso8583_mti),
             _ => None,
         }
     }
@@ -52,6 +54,7 @@ impl FieldCharType {
             &FieldCharType::Iso8583_b => "b",
             &FieldCharType::ISO8583_z => "z",
             &FieldCharType::Iso8583_bmps => "bmps",
+            &FieldCharType::Iso8583_mti => "mti",
         }
     }
 }

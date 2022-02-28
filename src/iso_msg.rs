@@ -279,6 +279,12 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
             let mut field = FieldPayload::default();
 
+            match iso_field.char_type {
+                FieldCharType::Iso8583_mti => {}
+                FieldCharType::Iso8583_bmps => {}
+                _ => {}
+            }
+
             let is_a_bitmap = !found_bitmap && (iso_field.char_type == FieldCharType::Iso8583_bmps);
 
             if is_a_bitmap {

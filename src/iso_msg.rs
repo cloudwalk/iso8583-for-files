@@ -251,7 +251,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         match iso_field.size_type {
             FieldSizeType::Fixed => iso_field.length,
             FieldSizeType::LlVar => {
-                let str_digits = unsafe { str::from_utf8_unchecked(&input_buffer[0..2]) };
+                let str_digits = str::from_utf8(&input_buffer[0..2]).unwrap();
                 usize::from_str_radix(str_digits, 10).unwrap() + 2
             }
             FieldSizeType::LllVar => {
@@ -259,7 +259,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                 usize::from_str_radix(str_digits, 10).unwrap() + 3
             }
             FieldSizeType::LlllVar => {
-                let str_digits = unsafe { str::from_utf8_unchecked(&input_buffer[0..4]) };
+                let str_digits = str::from_utf8(&input_buffer[0..4]).unwrap();
                 usize::from_str_radix(str_digits, 10).unwrap() + 4
             }
             _ => 0,
@@ -296,7 +296,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                 bit_arrays = bitarrays;
                 payload_index += field.len; //(iso_field.length * len/16);
             } else {
-                let mut field_exist = true; //until bitmap found, assume field exist
+                let mut field_exist = true; //until bitmap found, assume field exist (mti, always exists)
                 if found_bitmap {
                     if bit_arrays[0].get(i - bitmap_field_index).unwrap() {
                         field_exist = true;

@@ -200,8 +200,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             bit_array_index = index / 128;
 
             let is_a_bitmap = !bitmap_found
-                && (self.iso_spec.get_handle()[index].char_type == FieldCharType::Iso8583_bmp
-                    || self.iso_spec.get_handle()[index].char_type == FieldCharType::Iso8583_bmps);
+                && (self.iso_spec.get_handle()[index].char_type == FieldCharType::Iso8583_bmps);
             if is_a_bitmap {
                 bitmap_field_index = index;
                 bitmap_found = true;
@@ -280,9 +279,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
             let mut field = FieldPayload::default();
 
-            let is_a_bitmap = !found_bitmap
-                && (iso_field.char_type == FieldCharType::Iso8583_bmp
-                    || iso_field.char_type == FieldCharType::Iso8583_bmps);
+            let is_a_bitmap = !found_bitmap && (iso_field.char_type == FieldCharType::Iso8583_bmps);
 
             if is_a_bitmap {
                 found_bitmap = true;

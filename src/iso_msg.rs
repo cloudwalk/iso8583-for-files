@@ -271,7 +271,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         input_buffer: &[u8],
     ) {
         let mut payload_index = 0usize;
-        let mut found_bitmap = false;
         let mut bitmap_field_index = 0;
         let mut bit_arrays = Vec::<BitArray<u64, U128>>::with_capacity(0);
         for i in 0..iso_spec.get_handle().len() {
@@ -280,54 +279,72 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             let mut field = FieldPayload::default();
 
             match iso_field.char_type {
-                FieldCharType::Iso8583_mti => {}
-                FieldCharType::Iso8583_bmps => {}
-                _ => {}
-            }
-
-            let is_a_bitmap = !found_bitmap && (iso_field.char_type == FieldCharType::Iso8583_bmps);
-
-            if is_a_bitmap {
-                found_bitmap = true;
-                field.index = payload_index;
-
-                field.exist = true;
-                bitmap_field_index = i;
-
-                let bitarrays = IsoMsg::process_bitmap(&input_buffer[4..4 + 16]);
-                field.len = 16; //We are considering a secundary bitmap here
-                bit_arrays = bitarrays;
-                payload_index += field.len; //(iso_field.length * len/16);
-            } else {
-                let mut field_exist = true; //until bitmap found, assume field exist (mti, always exists)
-                if found_bitmap {
-                    if bit_arrays[0].get(i - bitmap_field_index).unwrap() {
-                        field_exist = true;
-                        trace!("Field {} exists.", i);
-                    } else {
-                        field_exist = false;
-                    }
-                }
-
-                if field_exist {
-                    field.index = payload_index;
-                    field.len = IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
-                    //TODO move this debugging for when there is an error/panic
-                    //println!(
-                    //    "label: {:?}\nContent: {:?}\nLength: {:?}\n",
-                    //    iso_field.label.clone(),
-                    //    String::from_utf8_lossy(
-                    //        &input_buffer[payload_index..payload_index + field.len]
-                    //    ),
-                    //    field.len
-                    //);
-                    field.exist = true;
+                FieldCharType::Iso8583_mti => {
+                    //XXX
+                    field = IsoMsg::create_field(
+                        payload_index,
+                        iso_field,
+                        &input_buffer[payload_index..],
+                    );
                     payload_index += field.len;
+                }
+                FieldCharType::Iso8583_bmps => {
+                    field.index = payload_index;
+
+                    field.exist = true;
+                    bitmap_field_index = i;
+
+                    let bitarrays = IsoMsg::process_bitmap(&input_buffer[4..4 + 16]);
+                    field.len = 16; //We are considering a secundary bitmap here
+                    bit_arrays = bitarrays;
+                    payload_index += field.len; //(iso_field.length * len/16);
+                }
+                _ => {
+                    let field_exist = bit_arrays[0].get(i - bitmap_field_index).unwrap();
+
+                    if field_exist {
+                        trace!("Field {} exists.", i);
+                        field.index = payload_index;
+                        field.len =
+                            IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
+                        //TODO move this debugging for when there is an error/panic
+                        println!(
+                            "label: {:?}\nContent: {:?}\nLength: {:?}\n",
+                            iso_field.label.clone(),
+                            String::from_utf8_lossy(
+                                &input_buffer[payload_index..payload_index + field.len]
+                            ),
+                            field.len
+                        );
+                        field.exist = true;
+                        payload_index += field.len;
+                    }
                 }
             }
 
             field.iso_field_label = Some(iso_field.label.clone()); //TODO use the reference instead of cloning everytime
             fields.push(field)
         }
+    }
+
+    fn create_field(
+        payload_index: usize,
+        iso_field: &IsoField,
+        remaining_input_buffer: &[u8],
+    ) -> FieldPayload {
+        let mut field = FieldPayload::default();
+        field.index = payload_index;
+        field.len = IsoMsg::get_field_length(iso_field, remaining_input_buffer);
+        //TODO move this debugging for when there is an error/panic
+        println!(
+            "label: {:?}\nContent: {:?}\nLength: {:?}\n",
+            iso_field.label.clone(),
+            String::from_utf8_lossy(
+                &remaining_input_buffer[payload_index..payload_index + field.len]
+            ),
+            field.len
+        );
+        field.exist = true;
+        field
     }
 }

@@ -44,9 +44,7 @@ impl fmt::Debug for IsoMsg<'_, '_> {
 
 impl<'a, 'b> IsoMsg<'a, 'b> {
     pub fn new(iso_spec: &'b IsoSpecs, payload: &'a [u8]) -> IsoMsg<'a, 'b> {
-        let mut fields = Vec::with_capacity(iso_spec.get_handle().len());
-
-        IsoMsg::from_byte_array(iso_spec, &mut fields, payload);
+        let fields = IsoMsg::from_byte_array(iso_spec, payload);
 
         IsoMsg {
             iso_spec: iso_spec,
@@ -61,7 +59,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
     pub fn remove_field(&mut self, index: usize) -> Result<(), &str> {
         assert!(index < self.fields.len());
-        assert!(index < self.iso_spec.get_handle().len());
+        assert!(index < self.iso_spec.specs.len());
         self.fields[index].exist = false;
         Ok(())
     }
@@ -73,16 +71,16 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             str::from_utf8(&buffer).unwrap()
         );
         assert!(index < self.fields.len());
-        assert!(index < self.iso_spec.get_handle().len());
-        assert!(buffer.len() <= self.iso_spec.get_handle()[index].length);
+        assert!(index < self.iso_spec.specs.len());
+        assert!(buffer.len() <= self.iso_spec.specs[index].length);
 
         let len_prefix = self.get_field_length_prefix(index);
         let total_lenth = buffer.len() + len_prefix;
         let mut v = Vec::with_capacity(total_lenth);
         trace!(
-            "buffer.len():{}, iso_spec.get_handle()[index].length:{}",
+            "buffer.len():{}, iso_spec.specs[index].length:{}",
             buffer.len(),
-            self.iso_spec.get_handle()[index].length
+            self.iso_spec.specs[index].length
         );
         if len_prefix > 0 {
             v.extend_from_slice(format!("{:0w$}", buffer.len(), w = len_prefix).as_bytes());
@@ -100,7 +98,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
     }
 
     pub fn get_field_length_prefix(&self, index: usize) -> usize {
-        match self.iso_spec.get_handle()[index].size_type {
+        match self.iso_spec.specs[index].size_type {
             FieldSizeType::LlVar => 2,
             FieldSizeType::LllVar => 3,
             FieldSizeType::LlllVar => 4,
@@ -183,7 +181,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
     pub fn to_byte_array(&self, buffer: &mut [u8]) -> usize {
         let mut buffer_index = 0usize;
-        let num_iteration: usize = (self.iso_spec.get_handle().len() - 1 + 63) / 128;
+        let num_iteration: usize = (self.iso_spec.specs.len() - 1 + 63) / 128;
         let mut bit_arrays = Vec::<BitArray<u64, U128>>::with_capacity(num_iteration);
         for _ in 0..num_iteration {
             bit_arrays.push(BitArray::<u64, U128>::from_elem(false));
@@ -200,7 +198,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             bit_array_index = index / 128;
 
             let is_a_bitmap = !bitmap_found
-                && (self.iso_spec.get_handle()[index].char_type == FieldCharType::Iso8583_bmps);
+                && (self.iso_spec.specs[index].char_type == FieldCharType::Iso8583_bmps);
             if is_a_bitmap {
                 bitmap_field_index = index;
                 bitmap_found = true;
@@ -261,24 +259,23 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                 let str_digits = str::from_utf8(&input_buffer[0..4]).unwrap();
                 usize::from_str_radix(str_digits, 10).unwrap() + 4
             }
-            _ => 0,
         }
     }
 
-    pub fn from_byte_array(
-        iso_spec: &IsoSpecs,
-        fields: &mut Vec<FieldPayload>,
-        input_buffer: &[u8],
-    ) {
+    //return a Result, create a debug param?
+    pub fn from_byte_array(iso_spec: &IsoSpecs, input_buffer: &[u8]) -> Vec<FieldPayload> {
         let mut payload_index = 0usize;
 
         let bit_array = &IsoMsg::process_bitmap(&input_buffer[4..4 + 16]);
 
-        for i in 0..iso_spec.get_handle().len() {
-            let iso_field: &IsoField = &iso_spec.get_handle()[i];
+        let mut fields = Vec::with_capacity(iso_spec.specs.len());
+
+        for iso_spec_index in 0..iso_spec.specs.len() {
+            let iso_field: &IsoField = &iso_spec.specs[iso_spec_index];
+            let is_a_mti_or_bitmap = iso_spec_index == 0 || iso_spec_index == 1;
 
             // i0 and i1 are bitmap and mti
-            let field_exist = (i == 0) || (i == 1) || bit_array.get(i - 1).unwrap();
+            let field_exist = is_a_mti_or_bitmap || bit_array.get(iso_spec_index - 1).unwrap();
 
             let field = if field_exist {
                 FieldPayload {
@@ -291,19 +288,14 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                 FieldPayload::default()
             };
 
-            //TODO move this debugging for when there is an error/panic
             if field.exist {
-                println!(
-                    "\nContent: {:?}\nLength: {:?}\n",
-                    String::from_utf8_lossy(
-                        &input_buffer[payload_index..payload_index + field.len]
-                    ),
-                    field
-                );
+                //fill a array and use thiserror (?)
+                println!("{:?}", field);
             }
 
             payload_index += field.len;
             fields.push(field)
         }
+        fields
     }
 }

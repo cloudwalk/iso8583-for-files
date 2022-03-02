@@ -6,21 +6,17 @@ use iso_field::IsoField;
 
 /// Auth spec defines the format of Iso8583 message
 pub struct IsoSpecs {
-    handle: Vec<IsoField>,
+    pub specs: Vec<IsoField>,
 }
 
 impl IsoSpecs {
     pub fn new() -> IsoSpecs {
         IsoSpecs {
-            handle: IsoSpecs::define_auth_specs(),
+            specs: IsoSpecs::define_specs(),
         }
     }
 
-    pub fn get_handle(&self) -> &Vec<IsoField> {
-        &self.handle
-    }
-
-    pub fn define_auth_specs() -> Vec<IsoField> {
+    pub fn define_specs() -> Vec<IsoField> {
         let h = vec![
             IsoField::new(
                 "Message Type Indicator",

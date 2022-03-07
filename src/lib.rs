@@ -1,4 +1,3 @@
-#![feature(test)]
 #![allow(non_camel_case_types)]
 extern crate bit_array;
 extern crate typenum;

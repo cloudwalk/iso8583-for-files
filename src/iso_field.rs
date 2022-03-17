@@ -128,7 +128,7 @@ pub struct FieldPayload {
 }
 
 impl FieldPayload {
-    pub fn iso_field_value<'a>(&self, buffer: &'a [u8]) -> &'a [u8] {
-        &buffer[self.index..self.index + self.len]
+    pub fn iso_field_value<'a>(&self, buffer: &'a [u8]) -> Vec<u8> {
+        buffer[self.index..self.index + self.len].to_vec()
     }
 }

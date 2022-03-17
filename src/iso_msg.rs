@@ -35,7 +35,7 @@ impl fmt::Debug for IsoMsg<'_, '_> {
                     "{} \n {:?} \n values: {:?} \n",
                     acc,
                     x.iso_field_label.clone().expect("cannot open field label"),
-                    String::from_utf8_lossy(x.iso_field_value(self.payload.deref()))
+                    String::from_utf8_lossy(&x.iso_field_value(self.payload.deref()))
                 )
             });
         write!(f, "{}", result)
@@ -290,7 +290,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
             if field.exist {
                 //fill a array and use thiserror (?)
-                println!("{:?}", field);
+                println!("{:?},", field);
             }
 
             payload_index += field.len;

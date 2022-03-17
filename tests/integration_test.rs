@@ -1,5 +1,7 @@
 use iso8583::iso_msg::IsoMsg;
+#[cfg(test)]
 use std::fs::File;
+#[cfg(test)]
 use std::io::Read;
 
 #[test]
@@ -19,12 +21,12 @@ fn parse_r111_binary() {
 
     file.read(&mut payload).expect("buffer overflow");
 
-    let _gg: Vec<iso8583::Group> = iso8583::parse_file(&payload).unwrap();
+    let _gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 }
 
 #[test]
 fn parse_invalid_file() {
-    let file_name = "tests/T113_sample.ipm";
+    let file_name = "tests/T112_sample.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -32,11 +34,11 @@ fn parse_invalid_file() {
 
     file.read(&mut payload).expect("buffer overflow");
 
-    let _gg: Vec<iso8583::Group> = iso8583::parse_file(&payload).unwrap();
+    let _gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 }
 
 #[test]
-fn parse_t113_binary() {
+fn parse_t113_blocked_with_rdw_binary() {
     let file_name = "tests/T113_sample.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
@@ -45,5 +47,9 @@ fn parse_t113_binary() {
 
     file.read(&mut payload).expect("buffer overflow");
 
-    let _gg: Vec<iso8583::Group> = iso8583::parse_file(&payload).unwrap();
+    let gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+
+    dbg!(gg.headers);
+
+    assert!(false)
 }

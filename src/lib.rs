@@ -19,10 +19,76 @@ pub struct Message {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Group {
-    messages: Vec<Message>,
+    pub messages: Vec<Message>,
 }
 
-pub fn parse_file(payload: Vec<u8>) -> Result<Vec<Group>, String> {
+//TODO dry me up
+impl Group {
+    fn is_header(self) -> bool {
+        if let Some(Message { label, value }) = self.messages.get(2) {
+            if label == "Function Code" && String::from_utf8_lossy(value) == "697" {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn is_first_presentment(self) -> bool {
+        if let Some(Message { label, value }) = self.messages.get(2) {
+            if label == "Function Code" && String::from_utf8_lossy(value) == "200" {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn is_settlement(self) -> bool {
+        if let Some(Message { label, value }) = self.messages.get(2) {
+            if label == "Function Code" && String::from_utf8_lossy(value) == "688" {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn is_footer(self) -> bool {
+        if let Some(Message { label, value }) = self.messages.get(2) {
+            if label == "Function Code" && String::from_utf8_lossy(value) == "695" {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Iso8583File {
+    pub groups: Vec<Group>,
+    pub headers: Vec<usize>,
+}
+
+impl Iso8583File {
+    fn new(groups: Vec<Group>) -> Result<Self, String> {
+        let mut parsed_file = Iso8583File {
+            groups,
+            headers: vec![],
+        };
+
+        parsed_file.assign_messages()?;
+
+        Ok(parsed_file)
+    }
+
+    fn assign_messages(&mut self) -> Result<(), String> {
+        let mut iterable_group = self.groups.iter();
+        while let Some(position) = iterable_group.rposition(|group| group.clone().is_header()) {
+            self.headers.push(position);
+        }
+        Ok(())
+    }
+}
+
+pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File, String> {
     //checks if file has rdw at head and blocks at tail
 
     let handle = iso_specs::IsoSpecs::new();
@@ -57,7 +123,9 @@ pub fn parse_file(payload: Vec<u8>) -> Result<Vec<Group>, String> {
         let mut new_message_group_vec = vec![message_group];
         message_groups.append(&mut new_message_group_vec);
     }
-    Ok(message_groups)
+    let iso8583_file = Iso8583File::new(message_groups)?;
+
+    Ok(iso8583_file)
 }
 
 // this is an additional security to avoid a stack level too deep or endless-loops

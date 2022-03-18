@@ -4,6 +4,15 @@ use iso_field::FieldCharType;
 use iso_field::FieldSizeType;
 use iso_field::IsoField;
 
+#[derive(Debug, Clone, Serialize)]
+pub enum Category {
+    Header,
+    FirstPresentment,
+    Settlement,
+    Trailer,
+    Unknown,
+}
+
 /// Auth spec defines the format of Iso8583 message
 pub struct IsoSpecs {
     pub specs: Vec<IsoField>,

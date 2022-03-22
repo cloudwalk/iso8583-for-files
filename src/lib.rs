@@ -14,11 +14,21 @@ pub mod pds;
 
 use crate::iso_specs::Category;
 use std::collections::HashMap;
+use std::fmt;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {
     label: String,
     value: Vec<u8>,
+}
+
+impl fmt::Display for Message {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match std::str::from_utf8(&self.value) {
+            Ok(message_value) => write!(f, "{}: {}", self.label, message_value),
+            Err(_) => write!(f, "{}: {:02X?}", self.label, self.value),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -50,7 +60,7 @@ impl Group {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Clone, Serialize)]
 pub struct Iso8583File {
     pub groups: Vec<Group>,
     headers: Vec<usize>,
@@ -61,6 +71,25 @@ pub struct Iso8583File {
     file_rejects: Vec<usize>,
     trailers: Vec<usize>,
     unknowns: Vec<usize>,
+}
+
+impl fmt::Debug for Iso8583File {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut formatted_messages: Vec<String> = vec![];
+
+        for gg in self.groups.iter() {
+            let formatted_message = gg.messages.iter().fold("".to_string(), |acc, message| {
+                format!("{} \n {:?} => {}", acc, gg.category, message)
+            });
+            formatted_messages.push(formatted_message);
+        }
+
+        let result: String = formatted_messages
+            .iter()
+            .fold("".to_string(), |acc, x| format!("{}\n{}", acc, x));
+
+        write!(f, "{}", result)
+    }
 }
 
 impl Iso8583File {

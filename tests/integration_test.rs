@@ -49,7 +49,19 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     let gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
+    let financial_position = gg.groups.get(2usize).unwrap();
+    assert_eq!(
+        financial_position.pds.clone().get("0300").unwrap(),
+        "0022203170000002337906128"
+    );
+
     let messages_indexes = gg.messages_indexes();
     assert_eq!(messages_indexes.get("trailers").unwrap(), &vec![3usize]);
+
+    assert_eq!(
+        messages_indexes.get("financial_positions").unwrap(),
+        &vec![2usize]
+    );
+
     assert_eq!(messages_indexes.get("headers").unwrap(), &vec![0usize]);
 }

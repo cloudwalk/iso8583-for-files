@@ -52,15 +52,3 @@ fn test_pds_reading() {
     assert_eq!(pds_values.get("0148").unwrap(), "9862");
     assert_eq!(pds_values.get("0300").unwrap(), "0022203170000002337906128");
 }
-
-#[test]
-fn test_broken_pds_reading() {
-    let message = crate::Message {
-        label: "Additional Data - Private".to_string(),
-        value: "30201480049862016".as_bytes().to_vec(),
-    };
-
-    let pds_values = get_pds_values(message).unwrap().unwrap();
-    assert_eq!(pds_values.get("0148").unwrap(), "9862");
-    assert_eq!(pds_values.get("0300").unwrap(), "0022203170000002337906128");
-}

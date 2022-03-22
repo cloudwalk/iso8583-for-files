@@ -9,6 +9,9 @@ pub enum Category {
     Header,
     FirstPresentment,
     Settlement,
+    FinancialPosition,
+    MessageException,
+    FileReject,
     Trailer,
     Unknown,
 }

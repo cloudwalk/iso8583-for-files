@@ -223,7 +223,7 @@ impl IsoSpecs {
                 FieldSizeType::LlVar,
             ), // Acquirer Reference Data
             IsoField::new(
-                " Acquirer Inst Id Code",
+                "Acquirer Inst Id Code",
                 FieldCharType::Iso8583_ns,
                 11,
                 FieldSizeType::LlVar,

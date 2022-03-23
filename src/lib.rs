@@ -81,7 +81,9 @@ impl fmt::Debug for Iso8583File {
             let formatted_message = gg.messages.iter().fold("".to_string(), |acc, message| {
                 format!("{} \n {:?} => {}", acc, gg.category, message)
             });
+
             formatted_messages.push(formatted_message);
+            formatted_messages.push(format!(" {:?}(pds) => {:?}", gg.category, gg.pds));
         }
 
         let result: String = formatted_messages

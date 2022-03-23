@@ -26,9 +26,10 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
 fn remove_blocking_chunks<'a>(payload: Vec<u8>) -> Vec<u8> {
     // removing @@ signs (1024 blockings)
     let mut deblocked_payload: Vec<u8> = vec![];
-    let mut payload_in_chunks = payload.chunks(2);
-    while let Some(two_bytes) = payload_in_chunks.next() {
-        if two_bytes != &[b'@', b'@'] {
+    let mut payload_in_chunks = payload.chunks(2).enumerate();
+    while let Some((pos, two_bytes)) = payload_in_chunks.next() {
+        let is_not_a_1014_block = pos == 0 || (pos % 507 != 0);
+        if is_not_a_1014_block {
             deblocked_payload.extend_from_slice(two_bytes);
         }
     }
@@ -45,7 +46,7 @@ fn has_rdw_or_block(payload: &[u8]) -> bool {
     let last_byte = payload_vec.last().unwrap_or(&b'0');
 
     //when there are non-ascii chars as in rdw and it ends with a block, it is high the probability of having rdw and @@
-    rdw_probability >= 3 && (last_byte == &b'@' || last_byte == &b'0')
+    rdw_probability >= 3 && (last_byte == &b'@' || last_byte == &0u8)
 }
 
 // Each subsequent byte has a potential value of 255 (because it's in ASCII)

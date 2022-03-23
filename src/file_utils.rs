@@ -9,7 +9,7 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
         let deblocked_payload = remove_blocking_chunks(payload);
 
         //since it's possible that the rdw slice ends 4 characters (due to rdw size)
-        while let Some(calculated_rdw) = rdw_to_size(&deblocked_payload[position..position + 4]) {
+        while let Some(calculated_rdw) = rdw_to_size(&deblocked_payload, position) {
             position = position + 4;
             let new_content = &deblocked_payload[position..(position + calculated_rdw)];
 
@@ -17,6 +17,7 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
 
             position = position + calculated_rdw;
         }
+
         new_vec
     } else {
         payload.to_vec()
@@ -26,10 +27,22 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
 fn remove_blocking_chunks<'a>(payload: Vec<u8>) -> Vec<u8> {
     // removing @@ signs (1024 blockings)
     let mut deblocked_payload: Vec<u8> = vec![];
+    let trailing_block_size = payload
+        .clone()
+        .into_iter()
+        .rev()
+        .take_while(|byte| byte == &0u8 || byte == &b'@')
+        .collect::<Vec<u8>>()
+        .len();
+    let trailing_block_position = payload.len() - trailing_block_size;
+
     let mut payload_in_chunks = payload.chunks(2).enumerate();
+
     while let Some((pos, two_bytes)) = payload_in_chunks.next() {
-        let is_not_a_1014_block = pos == 0 || (pos % 507 != 0);
-        if is_not_a_1014_block {
+        let is_not_a_zero_block = !(pos > 0 && (pos % 507 == 506) && two_bytes == &[0u8, 0u8]);
+        let is_not_a_trailing_block = trailing_block_position >= pos * 2;
+
+        if two_bytes != &[b'@', b'@'] && is_not_a_trailing_block && is_not_a_zero_block {
             deblocked_payload.extend_from_slice(two_bytes);
         }
     }
@@ -52,7 +65,12 @@ fn has_rdw_or_block(payload: &[u8]) -> bool {
 // Each subsequent byte has a potential value of 255 (because it's in ASCII)
 // so a RDW of 0u8 0u8 1u8 3u8 actually means that the RDW refers to the next 258 characters
 // (0 × 255³) + (0 × 255²) + (1 × 255¹) + (3 × 255⁰) = 258
-fn rdw_to_size(rdw_buffer: &[u8]) -> Option<usize> {
+fn rdw_to_size(raw_rdw_buffer: &[u8], position: usize) -> Option<usize> {
+    if raw_rdw_buffer.len() <= position + 4 {
+        return None;
+    }
+
+    let rdw_buffer = &raw_rdw_buffer[position..position + 4];
     let s: u64 = rdw_buffer
         .iter()
         .enumerate()
@@ -98,5 +116,10 @@ fn test_opening_blocked_file() {
 fn test_unblocked_file_must_remain_the_same() {
     let file = read_file("tests/R111_sample.ipm");
 
-    deblock_and_remove_rdw_from(file);
+    let deblocked_file = deblock_and_remove_rdw_from(file);
+    dbg!(String::from_utf8_lossy(&deblocked_file));
+    assert_eq!(
+        deblocked_file[1010..1020],
+        [57, 77, 88, 81, 57, 57, 57, 57, 57, 57]
+    )
 }

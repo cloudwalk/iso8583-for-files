@@ -604,7 +604,7 @@ impl IsoSpecs {
                 "Card Issuer Reference Data",
                 FieldCharType::Iso8583_ans,
                 42,
-                FieldSizeType::Fixed,
+                FieldSizeType::LlVar,
             ), // Card Issuer Reference Data
             IsoField::new(
                 "Key Management Data",

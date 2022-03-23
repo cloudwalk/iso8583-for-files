@@ -45,7 +45,7 @@ fn has_rdw_or_block(payload: &[u8]) -> bool {
     let last_byte = payload_vec.last().unwrap_or(&b'0');
 
     //when there are non-ascii chars as in rdw and it ends with a block, it is high the probability of having rdw and @@
-    rdw_probability >= 3 && last_byte == &b'@'
+    rdw_probability >= 3 && (last_byte == &b'@' || last_byte == &b'0')
 }
 
 // Each subsequent byte has a potential value of 255 (because it's in ASCII)

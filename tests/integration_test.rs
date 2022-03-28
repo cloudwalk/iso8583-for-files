@@ -21,7 +21,7 @@ fn parse_r111_binary() {
 
     file.read(&mut payload).expect("buffer overflow");
 
-    let _gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+    let _iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 }
 
 #[test]
@@ -34,7 +34,7 @@ fn parse_invalid_file() {
 
     file.read(&mut payload).expect("buffer overflow");
 
-    let _gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+    let _iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 }
 
 #[test]
@@ -47,15 +47,15 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     file.read(&mut payload).expect("buffer overflow");
 
-    let gg: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+    let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
-    let financial_position = gg.groups.get(2usize).unwrap();
+    let financial_position = iso8583_file.groups.get(2usize).unwrap();
     assert_eq!(
         financial_position.pds.clone().get("0300").unwrap(),
         "0022203170000002337906128"
     );
 
-    let messages_indexes = gg.messages_indexes();
+    let messages_indexes = iso8583_file.clone().messages_indexes();
     assert_eq!(messages_indexes.get("trailers").unwrap(), &vec![3usize]);
 
     assert_eq!(
@@ -64,4 +64,6 @@ fn parse_t113_blocked_with_rdw_binary() {
     );
 
     assert_eq!(messages_indexes.get("headers").unwrap(), &vec![0usize]);
+
+    assert_eq!(iso8583_file.groups[2].messages[5].utf8_value(), "986");
 }

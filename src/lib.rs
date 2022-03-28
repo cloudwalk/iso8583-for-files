@@ -23,7 +23,7 @@ pub struct Message {
 }
 
 impl Message {
-    fn utf8_value(&self) -> String {
+    pub fn utf8_value(&self) -> String {
         String::from_utf8_lossy(&self.value).to_string()
     }
 }

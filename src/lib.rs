@@ -22,6 +22,12 @@ pub struct Message {
     value: Vec<u8>,
 }
 
+impl Message {
+    fn utf8_value(&self) -> String {
+        String::from_utf8_lossy(&self.value).to_string()
+    }
+}
+
 impl fmt::Display for Message {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match std::str::from_utf8(&self.value) {

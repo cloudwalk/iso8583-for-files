@@ -13,7 +13,7 @@ pub enum Category {
     MessageException,
     FileReject,
     Trailer,
-    Unknown,
+    GenericAddendum,
 }
 
 /// Auth spec defines the format of Iso8583 message

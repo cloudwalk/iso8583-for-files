@@ -59,7 +59,7 @@ impl Group {
             Ok("691") => Category::MessageException,
             Ok("699") => Category::FileReject,
             Ok("695") => Category::Trailer,
-            _ => Category::Unknown,
+            _ => Category::GenericAddendum,
         };
 
         Some(category)
@@ -76,7 +76,7 @@ pub struct Iso8583File {
     message_exceptions: Vec<usize>,
     file_rejects: Vec<usize>,
     trailers: Vec<usize>,
-    unknowns: Vec<usize>,
+    genericaddendums: Vec<usize>,
 }
 
 impl fmt::Debug for Iso8583File {
@@ -111,7 +111,7 @@ impl Iso8583File {
             message_exceptions: vec![],
             file_rejects: vec![],
             trailers: vec![],
-            unknowns: vec![],
+            genericaddendums: vec![],
         };
 
         parsed_file.assign_messages()?;
@@ -128,7 +128,7 @@ impl Iso8583File {
             ("message_exceptions".to_string(), self.message_exceptions),
             ("file_rejects".to_string(), self.file_rejects),
             ("trailers".to_string(), self.trailers),
-            ("unknowns".to_string(), self.unknowns),
+            ("genericaddendums".to_string(), self.genericaddendums),
         ])
     }
 
@@ -143,7 +143,7 @@ impl Iso8583File {
                 Category::MessageException => self.message_exceptions.push(index),
                 Category::FileReject => self.file_rejects.push(index),
                 Category::Trailer => self.trailers.push(index),
-                Category::Unknown => self.unknowns.push(index),
+                Category::GenericAddendum => self.genericaddendums.push(index),
             };
         }
         Ok(())
@@ -163,7 +163,7 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File, String> {
     // +2 because of the index being 0 and we need to surpass it by 1
     while clean_payload.len() > (current_message_pointer + 2) {
         let mut messages_vec: Vec<Message> = vec![];
-        let mut category = Category::Unknown;
+        let mut category = Category::GenericAddendum;
         let mut pds: HashMap<String, String> = HashMap::new();
         let iso_msg = iso_msg::IsoMsg::new(&handle, &clean_payload[current_message_pointer..]);
         for field in iso_msg.present_fields() {

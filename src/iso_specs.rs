@@ -1,5 +1,4 @@
 use super::*;
-
 use iso_field::FieldCharType;
 use iso_field::FieldSizeType;
 use iso_field::IsoField;
@@ -7,13 +6,27 @@ use iso_field::IsoField;
 #[derive(Debug, Clone, Serialize)]
 pub enum Category {
     Header,
+    Trailer,
     FirstPresentment,
+    SecondPresentmentFull,
+    SecondPresentmentPartial,
+    FirstChargeback,
+    FinancialDetailAddendum,
+    RetrievalRequest,
+    RetrievalRequestAcknowledgement,
     Settlement,
     FinancialPosition,
+    FileCurrency,
     MessageException,
     FileReject,
-    Trailer,
-    GenericAddendum,
+    TextMessage,
+    CurrencyUpdate,
+    FeeCollectionCustomer,
+    FeeCollectionCustomerReturn,
+    FeeCollectionCustomerResubmission,
+    FeeCollectionCustomerArbitrationReturn,
+    FeeCollectionClearing,
+    Unknown,
 }
 
 /// Auth spec defines the format of Iso8583 message

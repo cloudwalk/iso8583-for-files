@@ -289,8 +289,16 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             };
 
             if field.exist {
-                //fill a array and use thiserror (?)
-                println!("{:?},", field);
+                //TODO fill a buffer with array of errors
+                // dbg!((
+                //     IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]),
+                //     iso_field.label.clone(),
+                //     String::from_utf8_lossy(&input_buffer[0..4]),
+                //     String::from_utf8_lossy(
+                //         &input_buffer[payload_index..payload_index + field.len]
+                //     ),
+                //     format!("{:?}", bit_array)
+                // ));
             }
 
             payload_index += field.len;

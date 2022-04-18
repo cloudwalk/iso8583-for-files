@@ -96,7 +96,7 @@ pub struct Iso8583File {
     second_presentments_full: Vec<usize>,
     second_presentments_partial: Vec<usize>,
     first_chargebacks: Vec<usize>,
-    financial_details_addendums: Vec<usize>,
+    financial_details_addenda: Vec<usize>,
     retrieval_requests: Vec<usize>,
     retrieval_requests_acknowledgement: Vec<usize>,
     file_currency: Vec<usize>,
@@ -145,7 +145,7 @@ impl Iso8583File {
             second_presentments_full: vec![],
             second_presentments_partial: vec![],
             first_chargebacks: vec![],
-            financial_details_addendums: vec![],
+            financial_details_addenda: vec![],
             retrieval_requests: vec![],
             retrieval_requests_acknowledgement: vec![],
             file_currency: vec![],
@@ -183,8 +183,8 @@ impl Iso8583File {
             ),
             ("first_chargebacks".to_string(), self.first_chargebacks),
             (
-                "financial_details_addendums".to_string(),
-                self.financial_details_addendums,
+                "financial_details_addenda".to_string(),
+                self.financial_details_addenda,
             ),
             ("retrieval_requests".to_string(), self.retrieval_requests),
             (
@@ -232,7 +232,7 @@ impl Iso8583File {
                 Category::SecondPresentmentFull => self.second_presentments_full.push(index),
                 Category::SecondPresentmentPartial => self.second_presentments_partial.push(index),
                 Category::FirstChargeback => self.first_chargebacks.push(index),
-                Category::FinancialDetailAddendum => self.financial_details_addendums.push(index),
+                Category::FinancialDetailAddendum => self.financial_details_addenda.push(index),
                 Category::RetrievalRequest => self.retrieval_requests.push(index),
                 Category::RetrievalRequestAcknowledgement => {
                     self.retrieval_requests_acknowledgement.push(index)

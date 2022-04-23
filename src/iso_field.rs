@@ -125,6 +125,7 @@ pub struct FieldPayload {
     pub exist: bool,
     pub index: usize,
     pub len: usize,
+    pub tag_len: usize, // the length of the tag e.g LLLVar = 3
 }
 
 impl FieldPayload {

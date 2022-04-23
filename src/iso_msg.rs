@@ -244,20 +244,20 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         buffer_index
     }
 
-    pub fn get_field_length(iso_field: &IsoField, input_buffer: &[u8]) -> usize {
+    pub fn get_field_length(iso_field: &IsoField, input_buffer: &[u8]) -> (usize, usize) {
         match iso_field.size_type {
-            FieldSizeType::Fixed | FieldSizeType::BitMap => iso_field.length,
+            FieldSizeType::Fixed | FieldSizeType::BitMap => (iso_field.length, 0),
             FieldSizeType::LlVar => {
                 let str_digits = str::from_utf8(&input_buffer[0..2]).unwrap();
-                usize::from_str_radix(str_digits, 10).unwrap() + 2
+                (usize::from_str_radix(str_digits, 10).unwrap() + 2, 2)
             }
             FieldSizeType::LllVar => {
                 let str_digits = str::from_utf8(&input_buffer[0..3]).unwrap();
-                usize::from_str_radix(str_digits, 10).unwrap() + 3
+                (usize::from_str_radix(str_digits, 10).unwrap() + 3, 3)
             }
             FieldSizeType::LlllVar => {
                 let str_digits = str::from_utf8(&input_buffer[0..4]).unwrap();
-                usize::from_str_radix(str_digits, 10).unwrap() + 4
+                (usize::from_str_radix(str_digits, 10).unwrap() + 4, 4)
             }
         }
     }
@@ -278,9 +278,11 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             let field_exist = is_a_mti_or_bitmap || bit_array.get(iso_spec_index - 1).unwrap();
 
             let field = if field_exist {
+                let (len, tag_len) = IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
                 FieldPayload {
                     index: payload_index,
-                    len: IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]),
+                    len: len,
+                    tag_len: tag_len,
                     exist: true,
                     iso_field_label: Some(iso_field.label.clone()), //TODO use the reference instead of cloning everytime
                 }

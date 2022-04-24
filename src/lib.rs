@@ -272,7 +272,6 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File, String> {
 
     let clean_payload = file_utils::deblock_and_remove_rdw_from(payload);
 
-    // +2 because of the index being 0 and we need to surpass it by 1
     while clean_payload.len() > (current_message_pointer + 2) {
         let mut messages_vec: Vec<Message> = vec![];
         let mut category = Category::Unknown;

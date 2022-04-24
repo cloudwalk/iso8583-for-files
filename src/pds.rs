@@ -10,7 +10,7 @@ pub fn get_pds_values(message: crate::Message) -> Result<Option<HashMap<String, 
         return Ok(None);
     }
     if let Ok(full_pds_text) = std::str::from_utf8(&message.value) {
-        let mut position = 3usize; // the position starts at 3 because DE48 is an LLLVAR, so we can ignore the 3 first characters
+        let mut position = 0usize;
         let mut pds_values: HashMap<String, String> = HashMap::new();
         while let Some((pds_size, pds_id, pds_value)) = pds_details(&full_pds_text, position) {
             pds_values.insert(pds_id.to_string(), pds_value.to_string());

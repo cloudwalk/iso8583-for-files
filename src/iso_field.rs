@@ -118,7 +118,7 @@ impl IsoField {
     }
 }
 
-/// Field Payload
+/// Field Payload is used inside IsoMsg to represent the field label, length and location
 #[derive(Debug, Default)]
 pub struct FieldPayload {
     pub iso_field_label: Option<String>,
@@ -130,6 +130,6 @@ pub struct FieldPayload {
 
 impl FieldPayload {
     pub fn iso_field_value<'a>(&self, buffer: &'a [u8]) -> Vec<u8> {
-        buffer[self.index..self.index + self.len].to_vec()
+        buffer[self.index + self.tag_len..self.index + self.len].to_vec()
     }
 }

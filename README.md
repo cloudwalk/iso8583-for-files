@@ -1,4 +1,17 @@
-# ISO-8583-FOR-FILES (WIP)
-Iso8583 Message Parser (Serialize/Deserialize)
+# iso8583-for-files
 
-Initially forked from https://github.com/rohitjoshi/iso8583 and heavily adapted for files parsing
+`iso8583-for-files` is a parser focused on translating RDW, blocking, Bitmaps and PDS directly into one data structure
+
+
+## High level features
+
+- Provide an easy to use interface
+- Deblocking
+- PDS reading
+
+
+## License
+
+This project is licensed under the [MIT license][license].
+
+[license]: https://github.com/cloudwalk/iso8583-for-files/blob/main/LICENSE-MIT

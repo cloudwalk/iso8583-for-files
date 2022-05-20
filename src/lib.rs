@@ -13,6 +13,7 @@ pub mod iso_specs;
 pub mod pds;
 
 use crate::iso_specs::Category;
+use eyre::{eyre, Result, WrapErr};
 use std::collections::HashMap;
 use std::fmt;
 
@@ -136,7 +137,7 @@ impl fmt::Debug for Iso8583File {
 }
 
 impl Iso8583File {
-    fn new(groups: Vec<Group>) -> Result<Self, String> {
+    fn new(groups: Vec<Group>) -> Result<Self> {
         let mut parsed_file = Iso8583File {
             groups,
             headers: vec![],
@@ -222,8 +223,8 @@ impl Iso8583File {
         ])
     }
 
-    fn assign_messages(&mut self) -> Result<(), String> {
-        let mut iterable_groups = self.groups.iter().enumerate();
+    fn assign_messages(&mut self) -> Result<()> {
+        let iterable_groups = self.groups.iter().enumerate();
         for (index, group) in iterable_groups {
             match &group.category {
                 Category::Header => self.headers.push(index),
@@ -262,7 +263,7 @@ impl Iso8583File {
     }
 }
 
-pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File, String> {
+pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
     //checks if file has rdw at head and blocks at tail
 
     let handle = iso_specs::IsoSpecs::new();
@@ -270,7 +271,7 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File, String> {
     let mut current_message_pointer: usize = 0;
     let mut message_groups: Vec<Group> = vec![];
 
-    let clean_payload = file_utils::deblock_and_remove_rdw_from(payload);
+    let clean_payload = file_utils::deblock_and_remove_rdw_from(payload)?;
 
     while clean_payload.len() > (current_message_pointer + 2) {
         let mut messages_vec: Vec<Message> = vec![];
@@ -295,7 +296,7 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File, String> {
             messages_vec.append(&mut parsed_message_vec);
 
             if check_for_repeated_messages(&messages_vec) {
-                return Err(format!("duplicated message should not exist on iso8583",));
+                return Err(eyre!("duplicated message should not exist on iso8583",));
             }
         }
         current_message_pointer += iso_msg.length();

@@ -278,7 +278,8 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
             let field_exist = is_a_mti_or_bitmap || bit_array.get(iso_spec_index - 1).unwrap();
 
             let field = if field_exist {
-                let (len, tag_len) = IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
+                let (len, tag_len) =
+                    IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
                 FieldPayload {
                     index: payload_index,
                     len: len,

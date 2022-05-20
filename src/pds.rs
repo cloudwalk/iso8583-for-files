@@ -1,3 +1,4 @@
+use eyre::{eyre, Result};
 use std::collections::HashMap;
 
 const PDS_LEN_SIZE: usize = 3;
@@ -5,7 +6,7 @@ const PDS_ID_SIZE: usize = 4;
 
 /// Each pds comes with a fixed id, length and value, each are concatenated to each other
 /// so a typical pds is (IIIILLLV(V+)+) where Id is always length 4, and the Length is always 3 characters
-pub fn get_pds_values(message: crate::Message) -> Result<Option<HashMap<String, String>>, String> {
+pub fn get_pds_values(message: crate::Message) -> Result<Option<HashMap<String, String>>> {
     if message.label != "Additional Data - Private" || message.value.len() < PDS_LEN_SIZE {
         return Ok(None);
     }
@@ -19,7 +20,7 @@ pub fn get_pds_values(message: crate::Message) -> Result<Option<HashMap<String, 
         }
         Ok(Some(pds_values))
     } else {
-        Err("".to_string())
+        Err(eyre!("unable to get pds values for {:?}", &message.value))
     }
 }
 

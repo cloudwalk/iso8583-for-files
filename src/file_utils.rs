@@ -1,9 +1,10 @@
+use eyre::{eyre, Result};
 use std::convert::TryFrom;
 
 /// Receives a payload and returns a cloned payload  without rdw or blocking
 //TODO return a result instead of trying to open the vector directly
-pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
-    if has_rdw_or_block(&payload) {
+pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Result<Vec<u8>> {
+    let new_payload = if has_rdw_or_block(&payload) {
         let mut new_vec: Vec<u8> = vec![];
         let mut position: usize = 0;
         let deblocked_payload = remove_blocking_chunks(payload);
@@ -11,9 +12,9 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
         //since it's possible that the rdw slice ends 4 characters (due to rdw size)
         while let Some(calculated_rdw) = rdw_to_size(&deblocked_payload, position) {
             position = position + 4;
-            let new_content = &deblocked_payload[position..(position + calculated_rdw)];
+            let new_content = &deblocked_payload.get(position..(position + calculated_rdw));
 
-            new_vec.extend_from_slice(new_content);
+            new_vec.extend_from_slice(new_content.ok_or_else(|| eyre!("unable to deblock file"))?);
 
             position = position + calculated_rdw;
         }
@@ -21,7 +22,9 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Vec<u8> {
         new_vec
     } else {
         payload.to_vec()
-    }
+    };
+
+    Ok(new_payload)
 }
 
 fn remove_blocking_chunks<'a>(payload: Vec<u8>) -> Vec<u8> {
@@ -109,14 +112,14 @@ fn read_file(file_name: &str) -> Vec<u8> {
 fn test_opening_blocked_file() {
     let file = read_file("tests/T113_sample.ipm");
 
-    deblock_and_remove_rdw_from(file);
+    deblock_and_remove_rdw_from(file).unwrap();
 }
 
 #[test]
 fn test_unblocked_file_must_remain_the_same() {
     let file = read_file("tests/R111_sample.ipm");
 
-    let deblocked_file = deblock_and_remove_rdw_from(file);
+    let deblocked_file = deblock_and_remove_rdw_from(file).unwrap();
     dbg!(String::from_utf8_lossy(&deblocked_file));
     assert_eq!(
         deblocked_file[1010..1020],

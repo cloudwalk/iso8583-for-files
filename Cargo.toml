@@ -23,3 +23,4 @@ bit-array="0.4.4"
 typenum= "1.9.0"
 serde = "1.0"
 serde_derive = "1.0"
+eyre = { version = "0.6" }

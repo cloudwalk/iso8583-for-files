@@ -19,8 +19,8 @@ use std::fmt;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {
-    label: String,
-    value: Vec<u8>,
+    pub label: String,
+    pub value: Vec<u8>,
 }
 
 impl Message {

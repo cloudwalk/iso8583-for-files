@@ -27,6 +27,10 @@ impl Message {
     pub fn utf8_value(&self) -> String {
         String::from_utf8_lossy(&self.value).to_string()
     }
+
+    pub fn get_label(&self) -> String {
+        self.label.to_string()
+    }
 }
 
 impl fmt::Display for Message {
@@ -48,6 +52,15 @@ pub struct Group {
 }
 
 impl Group {
+    /// Returns a HashMap [message.label => message.utf8_value] of all self.messages
+    pub fn get_messages_hash(&self) -> Result<HashMap<String, String>> {
+        let messages_hash: HashMap<String, String> = self
+            .messages
+            .iter()
+            .map(|p| return (p.get_label(), p.utf8_value()))
+            .collect();
+        Ok(messages_hash)
+    }
     fn get_category(function_code_message: Message) -> Option<Category> {
         if function_code_message.label != "Function Code" {
             return None;

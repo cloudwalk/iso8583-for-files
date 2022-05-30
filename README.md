@@ -1,7 +1,7 @@
-# ISO-8583-FOR-FILES (WIP)
+# ISO-8583-FOR-FILES
 `iso8583-for-files` is a parser focused on translating RDW, blocking, Bitmaps and PDS directly into one data structure.
 
-Initially forked from [rohitjoshi's parser][iso8583]and heavily adapted for files parsing.
+Initially forked from [rohitjoshi's parser][iso8583] and heavily adapted for files parsing.
 
 ## High level features
 - Provide an easy to use interface

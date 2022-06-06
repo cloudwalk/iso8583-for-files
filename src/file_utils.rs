@@ -12,9 +12,17 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Result<Vec<u8>> {
         //since it's possible that the rdw slice ends 4 characters (due to rdw size)
         while let Some(calculated_rdw) = rdw_to_size(&deblocked_payload, position) {
             position = position + 4;
+
             let new_content = &deblocked_payload.get(position..(position + calculated_rdw));
 
-            new_vec.extend_from_slice(new_content.ok_or_else(|| eyre!("unable to deblock file"))?);
+            new_vec.extend_from_slice(new_content.ok_or_else(|| {
+                eyre!(
+                    "unable to deblock file {:?} - position: {:?} - calculated_rdw: {:?}",
+                    new_content,
+                    position,
+                    calculated_rdw
+                )
+            })?);
 
             position = position + calculated_rdw;
         }

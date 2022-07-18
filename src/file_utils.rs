@@ -1,8 +1,7 @@
 use eyre::{eyre, Result};
 use std::convert::TryFrom;
 
-/// Receives a payload and returns a cloned payload  without rdw or blocking
-//TODO return a result instead of trying to open the vector directly
+/// Receives a payload and returns a cloned payload without rdw or blocking
 pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Result<Vec<u8>> {
     let new_payload = if has_rdw_or_block(&payload) {
         let mut new_vec: Vec<u8> = vec![];
@@ -51,9 +50,10 @@ fn remove_blocking_chunks<'a>(payload: Vec<u8>) -> Vec<u8> {
 
     while let Some((pos, two_bytes)) = payload_in_chunks.next() {
         let is_not_a_zero_block = !(pos > 0 && (pos % 507 == 506) && two_bytes == &[0u8, 0u8]);
+        let is_not_a_40_block = !(pos > 0 && (pos % 507 == 506) && two_bytes == &[b'@', b'@']);
         let is_not_a_trailing_block = trailing_block_position >= pos * 2;
 
-        if two_bytes != &[b'@', b'@'] && is_not_a_trailing_block && is_not_a_zero_block {
+        if is_not_a_40_block && is_not_a_trailing_block && is_not_a_zero_block {
             deblocked_payload.extend_from_slice(two_bytes);
         }
     }
@@ -73,9 +73,9 @@ fn has_rdw_or_block(payload: &[u8]) -> bool {
     rdw_probability >= 3 && (last_byte == &b'@' || last_byte == &0u8)
 }
 
-// Each subsequent byte has a potential value of 255 (because it's in ASCII)
-// so a RDW of 0u8 0u8 1u8 3u8 actually means that the RDW refers to the next 258 characters
-// (0 × 255³) + (0 × 255²) + (1 × 255¹) + (3 × 255⁰) = 258
+/// Each subsequent byte has a potential value of 255 (because it's in ASCII)
+/// so a RDW of 0u8 0u8 1u8 3u8 actually means that the RDW refers to the next 258 characters
+/// (0 × 255³) + (0 × 255²) + (1 × 255¹) + (3 × 255⁰) = 258
 fn rdw_to_size(raw_rdw_buffer: &[u8], position: usize) -> Option<usize> {
     if raw_rdw_buffer.len() <= position + 4 {
         return None;
@@ -118,7 +118,7 @@ fn read_file(file_name: &str) -> Vec<u8> {
 
 #[test]
 fn test_opening_blocked_file() {
-    let file = read_file("tests/T113_sample.ipm");
+    let file = read_file("tests/R111_sample.ipm");
 
     deblock_and_remove_rdw_from(file).unwrap();
 }

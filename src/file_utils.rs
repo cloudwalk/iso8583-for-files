@@ -110,7 +110,7 @@ fn read_file(file_name: &str) -> Vec<u8> {
 
 #[test]
 fn test_opening_blocked_file() {
-    let file = read_file("tests/broken");
+    let file = read_file("tests/R111_sample.ipm");
 
     deblock_and_remove_rdw_from(file).unwrap();
 }

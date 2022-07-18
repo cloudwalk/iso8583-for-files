@@ -73,7 +73,8 @@ impl Group {
             Ok("200") => Category::FirstPresentment,
             Ok("205") => Category::SecondPresentmentFull,
             Ok("282") => Category::SecondPresentmentPartial,
-            Ok("450") => Category::FirstChargeback,
+            Ok("450") => Category::FirstChargebackFull,
+            Ok("453") => Category::FirstChargebackPartial,
             Ok("696") => Category::FinancialDetailAddendum,
             // Retrieval messages
             Ok("603") => Category::RetrievalRequest,
@@ -109,7 +110,8 @@ pub struct Iso8583File {
     first_presentments: Vec<usize>,
     second_presentments_full: Vec<usize>,
     second_presentments_partial: Vec<usize>,
-    first_chargebacks: Vec<usize>,
+    first_chargebacks_full: Vec<usize>,
+    first_chargebacks_partial: Vec<usize>,
     financial_details_addenda: Vec<usize>,
     retrieval_requests: Vec<usize>,
     retrieval_requests_acknowledgement: Vec<usize>,
@@ -158,7 +160,8 @@ impl Iso8583File {
             first_presentments: vec![],
             second_presentments_full: vec![],
             second_presentments_partial: vec![],
-            first_chargebacks: vec![],
+            first_chargebacks_full: vec![],
+            first_chargebacks_partial: vec![],
             financial_details_addenda: vec![],
             retrieval_requests: vec![],
             retrieval_requests_acknowledgement: vec![],
@@ -183,57 +186,49 @@ impl Iso8583File {
     }
 
     pub fn messages_indexes(self) -> HashMap<String, Vec<usize>> {
-        std::collections::HashMap::from([
-            ("headers".to_string(), self.headers),
-            ("trailers".to_string(), self.trailers),
-            ("first_presentments".to_string(), self.first_presentments),
-            (
-                "second_presentments_full".to_string(),
-                self.second_presentments_full,
-            ),
-            (
-                "second_presentments_partial".to_string(),
-                self.second_presentments_partial,
-            ),
-            ("first_chargebacks".to_string(), self.first_chargebacks),
-            (
-                "financial_details_addenda".to_string(),
-                self.financial_details_addenda,
-            ),
-            ("retrieval_requests".to_string(), self.retrieval_requests),
-            (
-                "retrieval_requests_acknowledgement".to_string(),
-                self.retrieval_requests_acknowledgement,
-            ),
-            ("file_currency".to_string(), self.file_currency),
-            ("financial_positions".to_string(), self.financial_positions),
-            ("settlements".to_string(), self.settlements),
-            ("message_exceptions".to_string(), self.message_exceptions),
-            ("file_rejects".to_string(), self.file_rejects),
-            ("text_messages".to_string(), self.text_messages),
-            ("currency_updates".to_string(), self.currency_updates),
-            (
-                "fee_collections_customer".to_string(),
-                self.fee_collections_customer,
-            ),
-            (
-                "fee_collections_customer_return".to_string(),
-                self.fee_collections_customer_return,
-            ),
-            (
-                "fee_collections_customer_resubimission".to_string(),
-                self.fee_collections_customer_resubimission,
-            ),
-            (
-                "fee_collections_customer_arbitration_return".to_string(),
-                self.fee_collections_customer_arbitration_return,
-            ),
-            (
-                "fee_collections_clearing".to_string(),
-                self.fee_collections_clearing,
-            ),
-            ("unknowns".to_string(), self.unknowns),
-        ])
+        std::collections::HashMap::from(
+            [
+                ("headers", self.headers),
+                ("trailers", self.trailers),
+                ("first_presentments", self.first_presentments),
+                ("second_presentments_full", self.second_presentments_full),
+                (
+                    "second_presentments_partial",
+                    self.second_presentments_partial,
+                ),
+                ("first_chargebacks_full", self.first_chargebacks_full),
+                ("first_chargebacks_partial", self.first_chargebacks_partial),
+                ("financial_details_addenda", self.financial_details_addenda),
+                ("retrieval_requests", self.retrieval_requests),
+                (
+                    "retrieval_requests_acknowledgement",
+                    self.retrieval_requests_acknowledgement,
+                ),
+                ("file_currency", self.file_currency),
+                ("financial_positions", self.financial_positions),
+                ("settlements", self.settlements),
+                ("message_exceptions", self.message_exceptions),
+                ("file_rejects", self.file_rejects),
+                ("text_messages", self.text_messages),
+                ("currency_updates", self.currency_updates),
+                ("fee_collections_customer", self.fee_collections_customer),
+                (
+                    "fee_collections_customer_return",
+                    self.fee_collections_customer_return,
+                ),
+                (
+                    "fee_collections_customer_resubimission",
+                    self.fee_collections_customer_resubimission,
+                ),
+                (
+                    "fee_collections_customer_arbitration_return",
+                    self.fee_collections_customer_arbitration_return,
+                ),
+                ("fee_collections_clearing", self.fee_collections_clearing),
+                ("unknowns", self.unknowns),
+            ]
+            .map(|v| (v.0.to_string(), v.1)),
+        )
     }
 
     fn assign_messages(&mut self) -> Result<()> {
@@ -245,7 +240,8 @@ impl Iso8583File {
                 Category::FirstPresentment => self.first_presentments.push(index),
                 Category::SecondPresentmentFull => self.second_presentments_full.push(index),
                 Category::SecondPresentmentPartial => self.second_presentments_partial.push(index),
-                Category::FirstChargeback => self.first_chargebacks.push(index),
+                Category::FirstChargebackFull => self.first_chargebacks_full.push(index),
+                Category::FirstChargebackPartial => self.first_chargebacks_partial.push(index),
                 Category::FinancialDetailAddendum => self.financial_details_addenda.push(index),
                 Category::RetrievalRequest => self.retrieval_requests.push(index),
                 Category::RetrievalRequestAcknowledgement => {

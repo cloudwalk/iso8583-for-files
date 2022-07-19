@@ -1,5 +1,19 @@
 use eyre::{eyre, Result};
 use std::convert::TryFrom;
+use std::fs::File;
+use std::io::Read;
+
+/// Receives a filename string and returns the payload vec
+pub fn read_file(file_name: &str) -> Vec<u8> {
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    payload.to_vec()
+}
 
 /// Receives a payload and returns a cloned payload without rdw or blocking
 pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Result<Vec<u8>> {
@@ -98,22 +112,6 @@ fn rdw_to_size(raw_rdw_buffer: &[u8], position: usize) -> Option<usize> {
     } else {
         None
     }
-}
-
-#[cfg(test)]
-use std::fs::File;
-#[cfg(test)]
-use std::io::Read;
-#[cfg(test)]
-fn read_file(file_name: &str) -> Vec<u8> {
-    let mut file = File::open(file_name).expect("no file found");
-    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
-
-    let mut payload = vec![0; metadata.len() as usize];
-
-    file.read(&mut payload).expect("buffer overflow");
-
-    payload.to_vec()
 }
 
 #[test]

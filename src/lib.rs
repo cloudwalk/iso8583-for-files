@@ -276,6 +276,12 @@ impl Iso8583File {
     }
 }
 
+pub fn read_and_deblock_file<'a>(file_name: &str) -> Result<Vec<u8>> {
+    let file = file_utils::read_file(file_name);
+    let file_contents_base64 = file_utils::deblock_and_remove_rdw_from(file)?;
+    Ok(file_contents_base64)
+}
+
 pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
     //checks if file has rdw at head and blocks at tail
 

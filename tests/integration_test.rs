@@ -67,3 +67,39 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     assert_eq!(iso8583_file.groups[2].messages[5].utf8_value(), "986");
 }
+#[test]
+fn parse_t113_deblocked_sample() {
+    let file_name = "tests/T113_sample.ipm";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+
+    let messages_indexes = iso8583_file.clone().messages_indexes();
+
+    dbg!(&iso8583_file.clone().messages_count());
+    let exceptions = messages_indexes.get("message_exceptions").unwrap();
+    for g in exceptions {
+        println!("\n\n");
+        let original_group = iso8583_file.clone().groups.get(*g+1).unwrap().clone();
+        let original_messages = original_group.messages.clone();
+        for m in original_messages {
+            println!("orig: {} => {}", &m.get_label(), &m.utf8_value());
+        }
+        println!("\n\n{:?}\n\n", &original_group.pds);
+
+        println!("\n\n");
+        let group = iso8583_file.clone().groups.get(*g).unwrap().clone();
+        let messages = group.messages.clone();
+        for m in messages {
+            println!("post: {} => {}", &m.get_label(), &m.utf8_value());
+        }
+
+        println!("\n\n{:?}\n\n", &original_group.messages);
+        println!("\n\n{:?}\n\n", &group.pds);
+    }
+}

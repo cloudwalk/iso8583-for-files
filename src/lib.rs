@@ -182,6 +182,59 @@ impl Iso8583File {
         Ok(parsed_file)
     }
 
+    pub fn messages_count(self) -> HashMap<String, usize> {
+        std::collections::HashMap::from([
+            ("headers".to_string(), self.headers.len()),
+            ("trailers".to_string(), self.trailers.len()),
+            ("first_presentments".to_string(), self.first_presentments.len()),
+            (
+                "second_presentments_full".to_string(),
+                self.second_presentments_full.len(),
+            ),
+            (
+                "second_presentments_partial".to_string(),
+                self.second_presentments_partial.len(),
+            ),
+            ("first_chargebacks".to_string(), self.first_chargebacks.len()),
+            (
+                "financial_details_addenda".to_string(),
+                self.financial_details_addenda.len(),
+            ),
+            ("retrieval_requests".to_string(), self.retrieval_requests.len()),
+            (
+                "retrieval_requests_acknowledgement".to_string(),
+                self.retrieval_requests_acknowledgement.len(),
+            ),
+            ("file_currency".to_string(), self.file_currency.len()),
+            ("financial_positions".to_string(), self.financial_positions.len()),
+            ("settlements".to_string(), self.settlements.len()),
+            ("message_exceptions".to_string(), self.message_exceptions.len()),
+            ("file_rejects".to_string(), self.file_rejects.len()),
+            ("text_messages".to_string(), self.text_messages.len()),
+            ("currency_updates".to_string(), self.currency_updates.len()),
+            (
+                "fee_collections_customer".to_string(),
+                self.fee_collections_customer.len(),
+            ),
+            (
+                "fee_collections_customer_return".to_string(),
+                self.fee_collections_customer_return.len(),
+            ),
+            (
+                "fee_collections_customer_resubimission".to_string(),
+                self.fee_collections_customer_resubimission.len(),
+            ),
+            (
+                "fee_collections_customer_arbitration_return".to_string(),
+                self.fee_collections_customer_arbitration_return.len(),
+            ),
+            (
+                "fee_collections_clearing".to_string(),
+                self.fee_collections_clearing.len(),
+            ),
+            ("unknowns".to_string(), self.unknowns.len()),
+        ])
+    }
     pub fn messages_indexes(self) -> HashMap<String, Vec<usize>> {
         std::collections::HashMap::from([
             ("headers".to_string(), self.headers),

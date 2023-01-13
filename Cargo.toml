@@ -1,21 +1,21 @@
 [package]
 name = "iso8583"
-version = "1.0.0"
-authors = ["Rohit Joshi <rohit.joshi@rohit.c.joshi.com>"]
-edition = "2018"
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.66.1"
 license = "MIT"
-description = "Library to Parse ISO-8583 messages"
-homepage = "https://github.com/rohitjoshi/iso8583"
-repository = "https://github.com/rohitjoshi/iso8583"
-documentation = "https://github.com/rohitjoshi/iso8583/blob/master/README.md"
+description = "Parse ISO8583 messages chained within files with or without RDW"
+homepage = "https://github.com/cloudwalk/iso8583-for-files"
+repository = "https://github.com/cloudwalk/iso8583-for-files"
+documentation = "https://github.com/cloudwalk/iso8583-for-files/blob/master/README.md"
 keywords = ["iso8583", "encoding", "decoding", "protocol"]
 categories = ["encoding"]
 readme = "README.md"
 include = ["Cargo.toml", "src/**/*.rs", "README.md","LICENSE-MIT"]
 
 [badges]
-travis-ci = { repository = "rohitjoshi/iso8583", branch = "master" }
-codecov = { repository = "rohitjoshi/iso8583", branch = "master", service = "github" }
+travis-ci = { repository = "cloudwalk/iso8583-for-files", branch = "master" }
+codecov = { repository = "cloudwalk/iso8583-for-files", branch = "master", service = "github" }
 
 [dependencies]
 log = "0.3.8"

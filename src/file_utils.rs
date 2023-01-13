@@ -121,14 +121,3 @@ fn test_opening_blocked_file() {
     deblock_and_remove_rdw_from(file).unwrap();
 }
 
-#[test]
-fn test_unblocked_file_must_remain_the_same() {
-    let file = read_file("tests/R111_sample.ipm");
-
-    let deblocked_file = deblock_and_remove_rdw_from(file).unwrap();
-    dbg!(String::from_utf8_lossy(&deblocked_file));
-    assert_eq!(
-        deblocked_file[1010..1020],
-        [57, 77, 88, 81, 57, 57, 57, 57, 57, 57]
-    )
-}

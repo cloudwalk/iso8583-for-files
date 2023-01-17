@@ -24,3 +24,5 @@ typenum= "1.9.0"
 serde = "1.0"
 serde_derive = "1.0"
 eyre = { version = "0.6" }
+strum = "0.24"
+strum_macros = "0.24"

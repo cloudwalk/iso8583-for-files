@@ -13,9 +13,11 @@ pub mod iso_specs;
 pub mod pds;
 
 use crate::iso_specs::Category;
-use eyre::{eyre, Result, WrapErr};
+use eyre::{eyre, Result};
+use strum::{EnumProperty, IntoEnumIterator};
 use std::collections::HashMap;
 use std::fmt;
+use std::num::FpCategory;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {
@@ -61,71 +63,36 @@ impl Group {
             .collect();
         Ok(messages_hash)
     }
+
     fn get_category(function_code_message: Message) -> Option<Category> {
         if function_code_message.label != "Function Code" {
             return None;
         }
-        let category = match std::str::from_utf8(&function_code_message.value) {
-            // File layout messages
-            Ok("697") => Category::Header,
-            Ok("695") => Category::Trailer,
-            // Financial messages
-            Ok("200") => Category::FirstPresentment,
-            Ok("205") => Category::SecondPresentmentFull,
-            Ok("282") => Category::SecondPresentmentPartial,
-            Ok("450") => Category::FirstChargeback,
-            Ok("696") => Category::FinancialDetailAddendum,
-            // Retrieval messages
-            Ok("603") => Category::RetrievalRequest,
-            Ok("605") => Category::RetrievalRequestAcknowledgement,
-            // Reconciliation messages
-            Ok("680") => Category::FileCurrency,
-            Ok("685") => Category::FinancialPosition,
-            Ok("688") => Category::Settlement,
-            // Administrative messages
-            Ok("691") => Category::MessageException,
-            Ok("699") => Category::FileReject,
-            Ok("693") => Category::TextMessage,
-            Ok("640") => Category::CurrencyUpdate,
-            // Fee collection messages
-            Ok("700") => Category::FeeCollectionCustomer,
-            Ok("780") => Category::FeeCollectionCustomerReturn,
-            Ok("781") => Category::FeeCollectionCustomerResubmission,
-            Ok("782") => Category::FeeCollectionCustomerArbitrationReturn,
-            Ok("783") => Category::FeeCollectionClearing,
-            // Unknown messages
-            _ => Category::Unknown,
+
+        //XXX move this to the initialization
+        let mut category_hash = HashMap::new();
+        for category in Category::iter() {
+            match category.get_str("function_code") {
+                Some(category_function_code) => {
+                    category_hash.insert(category_function_code, category)
+                },
+                None => None,
+            };
         };
 
-        Some(category)
+        let function_code_message_value = std::str::from_utf8(&function_code_message.value).unwrap();
+
+        match category_hash.get(function_code_message_value) {
+            Some(category) => Some(category.to_owned()),
+            None => Some(Category::Unknown),
+        }
     }
 }
 
 #[derive(Clone, Serialize)]
 pub struct Iso8583File {
     pub groups: Vec<Group>,
-    headers: Vec<usize>,
-    trailers: Vec<usize>,
-    first_presentments: Vec<usize>,
-    second_presentments_full: Vec<usize>,
-    second_presentments_partial: Vec<usize>,
-    first_chargebacks: Vec<usize>,
-    financial_details_addenda: Vec<usize>,
-    retrieval_requests: Vec<usize>,
-    retrieval_requests_acknowledgement: Vec<usize>,
-    file_currency: Vec<usize>,
-    financial_positions: Vec<usize>,
-    settlements: Vec<usize>,
-    message_exceptions: Vec<usize>,
-    file_rejects: Vec<usize>,
-    text_messages: Vec<usize>,
-    currency_updates: Vec<usize>,
-    fee_collections_customer: Vec<usize>,
-    fee_collections_customer_return: Vec<usize>,
-    fee_collections_customer_resubimission: Vec<usize>,
-    fee_collections_customer_arbitration_return: Vec<usize>,
-    fee_collections_clearing: Vec<usize>,
-    unknowns: Vec<usize>,
+    pub categories_indexes: HashMap<String, Vec<usize>>,
 }
 
 impl fmt::Debug for Iso8583File {
@@ -153,28 +120,7 @@ impl Iso8583File {
     fn new(groups: Vec<Group>) -> Result<Self> {
         let mut parsed_file = Iso8583File {
             groups,
-            headers: vec![],
-            trailers: vec![],
-            first_presentments: vec![],
-            second_presentments_full: vec![],
-            second_presentments_partial: vec![],
-            first_chargebacks: vec![],
-            financial_details_addenda: vec![],
-            retrieval_requests: vec![],
-            retrieval_requests_acknowledgement: vec![],
-            file_currency: vec![],
-            financial_positions: vec![],
-            settlements: vec![],
-            message_exceptions: vec![],
-            file_rejects: vec![],
-            text_messages: vec![],
-            currency_updates: vec![],
-            fee_collections_customer: vec![],
-            fee_collections_customer_return: vec![],
-            fee_collections_customer_resubimission: vec![],
-            fee_collections_customer_arbitration_return: vec![],
-            fee_collections_clearing: vec![],
-            unknowns: vec![],
+            categories_indexes: HashMap::new(),
         };
 
         parsed_file.assign_messages()?;
@@ -183,148 +129,22 @@ impl Iso8583File {
     }
 
     pub fn messages_count(self) -> HashMap<String, usize> {
-        std::collections::HashMap::from([
-            ("headers".to_string(), self.headers.len()),
-            ("trailers".to_string(), self.trailers.len()),
-            ("first_presentments".to_string(), self.first_presentments.len()),
-            (
-                "second_presentments_full".to_string(),
-                self.second_presentments_full.len(),
-            ),
-            (
-                "second_presentments_partial".to_string(),
-                self.second_presentments_partial.len(),
-            ),
-            ("first_chargebacks".to_string(), self.first_chargebacks.len()),
-            (
-                "financial_details_addenda".to_string(),
-                self.financial_details_addenda.len(),
-            ),
-            ("retrieval_requests".to_string(), self.retrieval_requests.len()),
-            (
-                "retrieval_requests_acknowledgement".to_string(),
-                self.retrieval_requests_acknowledgement.len(),
-            ),
-            ("file_currency".to_string(), self.file_currency.len()),
-            ("financial_positions".to_string(), self.financial_positions.len()),
-            ("settlements".to_string(), self.settlements.len()),
-            ("message_exceptions".to_string(), self.message_exceptions.len()),
-            ("file_rejects".to_string(), self.file_rejects.len()),
-            ("text_messages".to_string(), self.text_messages.len()),
-            ("currency_updates".to_string(), self.currency_updates.len()),
-            (
-                "fee_collections_customer".to_string(),
-                self.fee_collections_customer.len(),
-            ),
-            (
-                "fee_collections_customer_return".to_string(),
-                self.fee_collections_customer_return.len(),
-            ),
-            (
-                "fee_collections_customer_resubimission".to_string(),
-                self.fee_collections_customer_resubimission.len(),
-            ),
-            (
-                "fee_collections_customer_arbitration_return".to_string(),
-                self.fee_collections_customer_arbitration_return.len(),
-            ),
-            (
-                "fee_collections_clearing".to_string(),
-                self.fee_collections_clearing.len(),
-            ),
-            ("unknowns".to_string(), self.unknowns.len()),
-        ])
-    }
-    pub fn messages_indexes(self) -> HashMap<String, Vec<usize>> {
-        std::collections::HashMap::from([
-            ("headers".to_string(), self.headers),
-            ("trailers".to_string(), self.trailers),
-            ("first_presentments".to_string(), self.first_presentments),
-            (
-                "second_presentments_full".to_string(),
-                self.second_presentments_full,
-            ),
-            (
-                "second_presentments_partial".to_string(),
-                self.second_presentments_partial,
-            ),
-            ("first_chargebacks".to_string(), self.first_chargebacks),
-            (
-                "financial_details_addenda".to_string(),
-                self.financial_details_addenda,
-            ),
-            ("retrieval_requests".to_string(), self.retrieval_requests),
-            (
-                "retrieval_requests_acknowledgement".to_string(),
-                self.retrieval_requests_acknowledgement,
-            ),
-            ("file_currency".to_string(), self.file_currency),
-            ("financial_positions".to_string(), self.financial_positions),
-            ("settlements".to_string(), self.settlements),
-            ("message_exceptions".to_string(), self.message_exceptions),
-            ("file_rejects".to_string(), self.file_rejects),
-            ("text_messages".to_string(), self.text_messages),
-            ("currency_updates".to_string(), self.currency_updates),
-            (
-                "fee_collections_customer".to_string(),
-                self.fee_collections_customer,
-            ),
-            (
-                "fee_collections_customer_return".to_string(),
-                self.fee_collections_customer_return,
-            ),
-            (
-                "fee_collections_customer_resubimission".to_string(),
-                self.fee_collections_customer_resubimission,
-            ),
-            (
-                "fee_collections_customer_arbitration_return".to_string(),
-                self.fee_collections_customer_arbitration_return,
-            ),
-            (
-                "fee_collections_clearing".to_string(),
-                self.fee_collections_clearing,
-            ),
-            ("unknowns".to_string(), self.unknowns),
-        ])
+        let mut messages_count = HashMap::new();
+        for (category_name, indexes) in self.categories_indexes {
+            messages_count.insert(category_name, indexes.len());
+        };
+        messages_count
     }
 
     fn assign_messages(&mut self) -> Result<()> {
+        let mut categories_indexes: HashMap<String, Vec<usize>> = HashMap::new();
         let iterable_groups = self.groups.iter().enumerate();
         for (index, group) in iterable_groups {
-            match &group.category {
-                Category::Header => self.headers.push(index),
-                Category::Trailer => self.trailers.push(index),
-                Category::FirstPresentment => self.first_presentments.push(index),
-                Category::SecondPresentmentFull => self.second_presentments_full.push(index),
-                Category::SecondPresentmentPartial => self.second_presentments_partial.push(index),
-                Category::FirstChargeback => self.first_chargebacks.push(index),
-                Category::FinancialDetailAddendum => self.financial_details_addenda.push(index),
-                Category::RetrievalRequest => self.retrieval_requests.push(index),
-                Category::RetrievalRequestAcknowledgement => {
-                    self.retrieval_requests_acknowledgement.push(index)
-                }
-                Category::FileCurrency => self.file_currency.push(index),
-                Category::FinancialPosition => self.financial_positions.push(index),
-                Category::Settlement => self.settlements.push(index),
-                Category::MessageException => self.message_exceptions.push(index),
-                Category::FileReject => self.file_rejects.push(index),
-                Category::TextMessage => self.text_messages.push(index),
-                Category::CurrencyUpdate => self.currency_updates.push(index),
-                Category::FeeCollectionCustomer => self.fee_collections_customer.push(index),
-                Category::FeeCollectionCustomerReturn => {
-                    self.fee_collections_customer_return.push(index)
-                }
-                Category::FeeCollectionCustomerResubmission => {
-                    self.fee_collections_customer_resubimission.push(index)
-                }
-                Category::FeeCollectionCustomerArbitrationReturn => {
-                    self.fee_collections_customer_arbitration_return.push(index)
-                }
-                Category::FeeCollectionClearing => self.fee_collections_clearing.push(index),
-                Category::Unknown => self.unknowns.push(index),
-            };
+            let category_name = group.category.get_str("name").unwrap().to_string();
+            let category_index_entry = categories_indexes.entry(category_name).or_default();
+            category_index_entry.push(index);
         }
+        self.categories_indexes = categories_indexes;
         Ok(())
     }
 }
@@ -375,8 +195,8 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
 
         let message_group = Group {
             messages: messages_vec,
-            pds: pds,
-            category: category,
+            pds,
+            category,
         };
         let mut new_message_group_vec = vec![message_group];
         message_groups.append(&mut new_message_group_vec);

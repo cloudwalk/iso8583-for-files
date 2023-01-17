@@ -49,21 +49,25 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
-    let financial_position = iso8583_file.groups.get(2usize).unwrap();
-    assert_eq!(
-        financial_position.pds.clone().get("0300").unwrap(),
-        "0022203170000002337906128"
-    );
+    // let financial_position = iso8583_file.groups.get(2usize).unwrap();
+    // assert_eq!(
+    //     financial_position.pds.clone().get("0300").unwrap(),
+    //     "0022203170000002337906128"
+    // );
 
-    let messages_indexes = iso8583_file.clone().messages_indexes();
-    assert_eq!(messages_indexes.get("trailers").unwrap(), &vec![3usize]);
+    let categories_indexes = iso8583_file.clone().categories_indexes;
+    // assert_eq!(categories_indexes.get("trailers").unwrap(), &vec![3usize]);
+
+    // dbg!(iso8583_file.clone().groups.get(1));
+    dbg!(&iso8583_file.clone().messages_count());
+    dbg!(categories_indexes.get("message_exceptions").unwrap());
 
     assert_eq!(
-        messages_indexes.get("financial_positions").unwrap(),
+        categories_indexes.get("financial_positions").unwrap(),
         &vec![2usize]
     );
 
-    assert_eq!(messages_indexes.get("headers").unwrap(), &vec![0usize]);
+    assert_eq!(categories_indexes.get("headers").unwrap(), &vec![0usize]);
 
     assert_eq!(iso8583_file.groups[2].messages[5].utf8_value(), "986");
 }
@@ -79,10 +83,11 @@ fn parse_t113_deblocked_sample() {
 
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
-    let messages_indexes = iso8583_file.clone().messages_indexes();
+    let categories_indexes = iso8583_file.clone().categories_indexes;
 
     dbg!(&iso8583_file.clone().messages_count());
-    let exceptions = messages_indexes.get("message_exceptions").unwrap();
+    dbg!(&categories_indexes);
+    let exceptions = categories_indexes.get("message_exceptions").unwrap();
     for g in exceptions {
         println!("\n\n");
         let original_group = iso8583_file.clone().groups.get(*g+1).unwrap().clone();

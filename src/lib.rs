@@ -63,6 +63,7 @@ impl Group {
             .collect();
         Ok(messages_hash)
     }
+
     fn get_category(function_code_message: Message) -> Option<Category> {
         if function_code_message.label != "Function Code" {
             return None;
@@ -193,8 +194,8 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
 
         let message_group = Group {
             messages: messages_vec,
-            pds: pds,
-            category: category,
+            pds,
+            category,
         };
         let mut new_message_group_vec = vec![message_group];
         message_groups.append(&mut new_message_group_vec);

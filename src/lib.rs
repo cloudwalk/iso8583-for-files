@@ -104,28 +104,7 @@ impl Group {
 #[derive(Clone, Serialize)]
 pub struct Iso8583File {
     pub groups: Vec<Group>,
-    headers: Vec<usize>,
-    trailers: Vec<usize>,
-    first_presentments: Vec<usize>,
-    second_presentments_full: Vec<usize>,
-    second_presentments_partial: Vec<usize>,
-    first_chargebacks: Vec<usize>,
-    financial_details_addenda: Vec<usize>,
-    retrieval_requests: Vec<usize>,
-    retrieval_requests_acknowledgement: Vec<usize>,
-    file_currency: Vec<usize>,
-    financial_positions: Vec<usize>,
-    settlements: Vec<usize>,
-    message_exceptions: Vec<usize>,
-    file_rejects: Vec<usize>,
-    text_messages: Vec<usize>,
-    currency_updates: Vec<usize>,
-    fee_collections_customer: Vec<usize>,
-    fee_collections_customer_return: Vec<usize>,
-    fee_collections_customer_resubimission: Vec<usize>,
-    fee_collections_customer_arbitration_return: Vec<usize>,
-    fee_collections_clearing: Vec<usize>,
-    unknowns: Vec<usize>,
+    pub categories_indexes: HashMap<String, Vec<usize>>,
 }
 
 impl fmt::Debug for Iso8583File {

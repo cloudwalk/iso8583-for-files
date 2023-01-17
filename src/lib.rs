@@ -144,6 +144,7 @@ impl Iso8583File {
             let category_index_entry = categories_indexes.entry(category_name).or_default();
             category_index_entry.push(index);
         }
+        self.categories_indexes = categories_indexes;
         Ok(())
     }
 }

@@ -13,9 +13,11 @@ pub mod iso_specs;
 pub mod pds;
 
 use crate::iso_specs::Category;
-use eyre::{eyre, Result, WrapErr};
+use eyre::{eyre, Result};
+use strum::{EnumProperty, IntoEnumIterator};
 use std::collections::HashMap;
 use std::fmt;
+use std::num::FpCategory;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {
@@ -65,36 +67,16 @@ impl Group {
         if function_code_message.label != "Function Code" {
             return None;
         }
-        let category = match std::str::from_utf8(&function_code_message.value) {
-            // File layout messages
-            Ok("697") => Category::Header,
-            Ok("695") => Category::Trailer,
-            // Financial messages
-            Ok("200") => Category::FirstPresentment,
-            Ok("205") => Category::SecondPresentmentFull,
-            Ok("282") => Category::SecondPresentmentPartial,
-            Ok("450") => Category::FirstChargeback,
-            Ok("696") => Category::FinancialDetailAddendum,
-            // Retrieval messages
-            Ok("603") => Category::RetrievalRequest,
-            Ok("605") => Category::RetrievalRequestAcknowledgement,
-            // Reconciliation messages
-            Ok("680") => Category::FileCurrency,
-            Ok("685") => Category::FinancialPosition,
-            Ok("688") => Category::Settlement,
-            // Administrative messages
-            Ok("691") => Category::MessageException,
-            Ok("699") => Category::FileReject,
-            Ok("693") => Category::TextMessage,
-            Ok("640") => Category::CurrencyUpdate,
-            // Fee collection messages
-            Ok("700") => Category::FeeCollectionCustomer,
-            Ok("780") => Category::FeeCollectionCustomerReturn,
-            Ok("781") => Category::FeeCollectionCustomerResubmission,
-            Ok("782") => Category::FeeCollectionCustomerArbitrationReturn,
-            Ok("783") => Category::FeeCollectionClearing,
-            // Unknown messages
-            _ => Category::Unknown,
+
+        //XXX move this to the initialization
+        let mut category_hash = HashMap::new();
+        for category in Category::iter() {
+            match category.get_str("function_code") {
+                Some(category_function_code) => {
+                    category_hash.insert(category_function_code, category)
+                },
+                None => None,
+            };
         };
 
         Some(category)

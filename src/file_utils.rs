@@ -120,4 +120,3 @@ fn test_opening_blocked_file() {
 
     deblock_and_remove_rdw_from(file).unwrap();
 }
-

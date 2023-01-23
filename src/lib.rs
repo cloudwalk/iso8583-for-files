@@ -79,12 +79,13 @@ impl Group {
             match category.get_str("function_code") {
                 Some(category_function_code) => {
                     category_hash.insert(category_function_code, category)
-                },
+                }
                 None => None,
             };
-        };
+        }
 
-        let function_code_message_value = std::str::from_utf8(&function_code_message.value).unwrap();
+        let function_code_message_value =
+            std::str::from_utf8(&function_code_message.value).unwrap();
 
         match category_hash.get(function_code_message_value) {
             Some(category) => Some(category.to_owned()),
@@ -127,7 +128,7 @@ impl Iso8583File {
             categories_indexes: HashMap::new(),
         };
 
-        parsed_file.assign_messages()?;
+        parsed_file.assign_messages_categories()?;
 
         Ok(parsed_file)
     }
@@ -136,11 +137,45 @@ impl Iso8583File {
         let mut messages_count = HashMap::new();
         for (category_name, indexes) in self.categories_indexes {
             messages_count.insert(category_name, indexes.len());
-        };
+        }
         messages_count
     }
 
-    fn assign_messages(&mut self) -> Result<()> {
+    /// Searches for a set of iso8583 keys and values in order to create a cloned structure
+    /// containing only the searched fields.
+    /// This process is memory intensive, due to the imutable nature of this method
+    pub fn search(self, search: HashMap<String, Vec<String>>) -> Iso8583File {
+        let mut search_groups_result: Vec<Group> = vec![];
+
+        //TODO fix the performance for the search
+        // since this loops inside each group and uses a hash to find a match, this is memory intensive
+        for group in self.groups {
+            let group_messages_hash = group.get_messages_hash().expect("Unable to find message hash for group. Maybe the file is broken");
+            for search_key in search.keys() {
+                match group_messages_hash.get(search_key) {
+                    Some(message) => {
+                        if search.get(search_key).unwrap().contains(message) {
+                            search_groups_result.push(group);
+                            break;
+                        }
+                    },
+                    None => {}
+                }
+            }
+        }
+
+        let mut new_iso8583_files = Iso8583File {
+            groups: search_groups_result,
+            categories_indexes: HashMap::new(),
+        };
+
+        new_iso8583_files.assign_messages_categories().expect("Unable to assign categories messages");
+
+        new_iso8583_files
+    }
+
+
+    fn assign_messages_categories(&mut self) -> Result<()> {
         let mut categories_indexes: HashMap<String, Vec<usize>> = HashMap::new();
         let iterable_groups = self.groups.iter().enumerate();
         for (index, group) in iterable_groups {

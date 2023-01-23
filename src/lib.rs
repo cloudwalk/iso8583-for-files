@@ -43,6 +43,11 @@ impl fmt::Display for Message {
     }
 }
 
+/// A Group represents a set of messages e.g Data elements or PDS
+/// Data elements (DE) are stored within `messages`
+///
+/// Usually a group represents something based on it's categories, for example a FirstPresentment
+/// Although some messages rely on being chained, like a MessageException, linked to a FirstPresentment on a TT113 file
 #[derive(Debug, Clone, Serialize)]
 pub struct Group {
     //FIXME this could be a hashmap just like pds, and also named to DE

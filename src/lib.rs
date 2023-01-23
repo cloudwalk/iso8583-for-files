@@ -14,10 +14,9 @@ pub mod pds;
 
 use crate::iso_specs::Category;
 use eyre::{eyre, Result};
-use strum::{EnumProperty, IntoEnumIterator};
 use std::collections::HashMap;
 use std::fmt;
-use std::num::FpCategory;
+use strum::{EnumProperty, IntoEnumIterator};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {

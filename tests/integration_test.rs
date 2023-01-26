@@ -1,5 +1,7 @@
 use iso8583::iso_msg::IsoMsg;
 #[cfg(test)]
+use std::collections::HashMap;
+#[cfg(test)]
 use std::fs::File;
 #[cfg(test)]
 use std::io::Read;
@@ -83,6 +85,25 @@ fn parse_t113_deblocked_sample() {
 
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
+    let searched = iso8583_file.search(HashMap::from([("Function Code".to_string(), vec!["200".to_string(), "691".to_string()])]));
+
+    dbg!(searched);
+    // assert_eq!(searched.groups.len(), 2318);
+    // let filtered = iso8583_file.filter(vec!["Message Number"]);
+}
+
+#[test]
+fn parse_t113_deblocked_sample() {
+    let file_name = "/Users/renanflorez-mba/Downloads/mastercard_prd_recebe_2022-12-21_TT113T0.2022-12-21-20-18-20.001_deblocked";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+
     let categories_indexes = iso8583_file.clone().categories_indexes;
 
     dbg!(&iso8583_file.clone().messages_count());
@@ -90,7 +111,7 @@ fn parse_t113_deblocked_sample() {
     let exceptions = categories_indexes.get("message_exceptions").unwrap();
     for g in exceptions {
         println!("\n\n");
-        let original_group = iso8583_file.clone().groups.get(*g+1).unwrap().clone();
+        let original_group = iso8583_file.clone().groups.get(*g + 1).unwrap().clone();
         let original_messages = original_group.messages.clone();
         for m in original_messages {
             println!("orig: {} => {}", &m.get_label(), &m.utf8_value());

@@ -47,9 +47,9 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         let fields = IsoMsg::from_byte_array(iso_spec, payload);
 
         IsoMsg {
-            iso_spec: iso_spec,
+            iso_spec,
             payload: Cow::Borrowed(payload),
-            fields: fields,
+            fields,
         }
     }
 
@@ -68,7 +68,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         trace!(
             "set_field: index:{}, buffer:{}",
             index,
-            str::from_utf8(&buffer).unwrap()
+            str::from_utf8(buffer).unwrap()
         );
         assert!(index < self.fields.len());
         assert!(index < self.iso_spec.specs.len());
@@ -158,9 +158,9 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
     pub fn process_bitmap(bitmap_bytes: &[u8]) -> BitArray<u64, U128> {
         let bitmap = &bitmap_bytes[0..16]; //this is taking into account that there will always be a secundary bitmap
-        let bit_array = BitArray::<u64, U128>::from_bytes(bitmap);
+        
 
-        bit_array
+        BitArray::<u64, U128>::from_bytes(bitmap)
     }
 
     pub fn convert_u32_be(array: &[u8]) -> u32 {
@@ -168,12 +168,12 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
         (u32::from(array[0]) << 24)
             + (u32::from(array[1]) << 16)
             + (u32::from(array[2]) << 8)
-            + (u32::from(array[3]) << 0)
+            + u32::from(array[3])
     }
 
     pub fn convert_u32_le(array: &[u8]) -> u32 {
         assert_eq!(array.len(), 4);
-        (u32::from(array[0]) << 0)
+        u32::from(array[0])
             + (u32::from(array[1]) << 8)
             + (u32::from(array[2]) << 16)
             + (u32::from(array[3]) << 24)
@@ -282,8 +282,8 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     IsoMsg::get_field_length(iso_field, &input_buffer[payload_index..]);
                 FieldPayload {
                     index: payload_index,
-                    len: len,
-                    tag_len: tag_len,
+                    len,
+                    tag_len,
                     exist: true,
                     iso_field_label: Some(iso_field.label.clone()), //TODO use the reference instead of cloning everytime
                 }

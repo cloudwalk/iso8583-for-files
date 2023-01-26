@@ -937,6 +937,6 @@ impl IsoSpecs {
                 FieldSizeType::Fixed,
             ), // Message Authentication Code Field
         ];
-        return h;
+        h
     }
 }

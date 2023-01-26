@@ -111,9 +111,9 @@ impl IsoField {
     ) -> IsoField {
         IsoField {
             label: String::from(label),
-            char_type: char_type,
-            length: length,
-            size_type: size_type,
+            char_type,
+            length,
+            size_type,
         }
     }
 }

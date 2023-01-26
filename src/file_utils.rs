@@ -24,7 +24,7 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Result<Vec<u8>> {
 
         //since it's possible that the rdw slice ends 4 characters (due to rdw size)
         while let Some(calculated_rdw) = rdw_to_size(&deblocked_payload, position) {
-            position = position + 4;
+            position += 4;
 
             let new_content = &deblocked_payload.get(position..(position + calculated_rdw));
 
@@ -37,7 +37,7 @@ pub fn deblock_and_remove_rdw_from(payload: Vec<u8>) -> Result<Vec<u8>> {
                 )
             })?);
 
-            position = position + calculated_rdw;
+            position += calculated_rdw;
         }
 
         new_vec
@@ -60,9 +60,9 @@ fn remove_blocking_chunks<'a>(payload: Vec<u8>) -> Vec<u8> {
         .len();
     let trailing_block_position = payload.len() - trailing_block_size;
 
-    let mut payload_in_chunks = payload.chunks(2).enumerate();
+    let payload_in_chunks = payload.chunks(2).enumerate();
 
-    while let Some((pos, two_bytes)) = payload_in_chunks.next() {
+    for (pos, two_bytes) in payload_in_chunks {
         let is_not_a_zero_block = !(pos > 0 && (pos % 507 == 506) && two_bytes == &[0u8, 0u8]);
         let is_not_a_40_block = !(pos > 0 && (pos % 507 == 506) && two_bytes == &[b'@', b'@']);
         let is_not_a_trailing_block = trailing_block_position >= pos * 2;

@@ -63,7 +63,7 @@ impl Group {
         let messages_hash: HashMap<String, String> = self
             .messages
             .iter()
-            .map(|p| return (p.get_label(), p.utf8_value()))
+            .map(|p| (p.get_label(), p.utf8_value()))
             .collect();
         Ok(messages_hash)
     }

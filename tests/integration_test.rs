@@ -51,16 +51,8 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
-    // let financial_position = iso8583_file.groups.get(2usize).unwrap();
-    // assert_eq!(
-    //     financial_position.pds.clone().get("0300").unwrap(),
-    //     "0022203170000002337906128"
-    // );
-
     let categories_indexes = iso8583_file.clone().categories_indexes;
-    // assert_eq!(categories_indexes.get("trailers").unwrap(), &vec![3usize]);
 
-    // dbg!(iso8583_file.clone().groups.get(1));
     dbg!(&iso8583_file.clone().messages_count());
     dbg!(categories_indexes.get("message_exceptions").unwrap());
 
@@ -73,8 +65,9 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     assert_eq!(iso8583_file.groups[2].messages[5].utf8_value(), "986");
 }
+
 #[test]
-fn parse_t113_deblocked_sample() {
+fn search_and_filter_t113_deblocked_sample() {
     let file_name = "tests/T113_sample.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
@@ -94,7 +87,7 @@ fn parse_t113_deblocked_sample() {
 
 #[test]
 fn parse_t113_deblocked_sample() {
-    let file_name = "/Users/renanflorez-mba/Downloads/mastercard_prd_recebe_2022-12-21_TT113T0.2022-12-21-20-18-20.001_deblocked";
+    let file_name = "tests/T113_sample.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 

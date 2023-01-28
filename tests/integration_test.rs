@@ -1,5 +1,7 @@
 use iso8583::iso_msg::IsoMsg;
 #[cfg(test)]
+use std::collections::HashMap;
+#[cfg(test)]
 use std::fs::File;
 #[cfg(test)]
 use std::io::Read;
@@ -49,16 +51,8 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
-    // let financial_position = iso8583_file.groups.get(2usize).unwrap();
-    // assert_eq!(
-    //     financial_position.pds.clone().get("0300").unwrap(),
-    //     "0022203170000002337906128"
-    // );
-
     let categories_indexes = iso8583_file.clone().categories_indexes;
-    // assert_eq!(categories_indexes.get("trailers").unwrap(), &vec![3usize]);
 
-    // dbg!(iso8583_file.clone().groups.get(1));
     dbg!(&iso8583_file.clone().messages_count());
     dbg!(categories_indexes.get("message_exceptions").unwrap());
 
@@ -71,6 +65,26 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     assert_eq!(iso8583_file.groups[2].messages[5].utf8_value(), "986");
 }
+
+#[test]
+fn search_and_filter_t113_deblocked_sample() {
+    let file_name = "tests/T113_sample.ipm";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+
+    let searched = iso8583_file.search(HashMap::from([("Function Code".to_string(), vec!["200".to_string(), "691".to_string()])]));
+
+    dbg!(searched);
+    // assert_eq!(searched.groups.len(), 2318);
+    // let filtered = iso8583_file.filter(vec!["Message Number"]);
+}
+
 #[test]
 fn parse_t113_deblocked_sample() {
     let file_name = "tests/T113_sample.ipm";
@@ -90,7 +104,7 @@ fn parse_t113_deblocked_sample() {
     let exceptions = categories_indexes.get("message_exceptions").unwrap();
     for g in exceptions {
         println!("\n\n");
-        let original_group = iso8583_file.clone().groups.get(*g+1).unwrap().clone();
+        let original_group = iso8583_file.clone().groups.get(*g + 1).unwrap().clone();
         let original_messages = original_group.messages.clone();
         for m in original_messages {
             println!("orig: {} => {}", &m.get_label(), &m.utf8_value());

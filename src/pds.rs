@@ -13,7 +13,7 @@ pub fn get_pds_values(message: crate::Message) -> Result<Option<HashMap<String, 
     if let Ok(full_pds_text) = std::str::from_utf8(&message.value) {
         let mut position = 0usize;
         let mut pds_values: HashMap<String, String> = HashMap::new();
-        while let Some((pds_size, pds_id, pds_value)) = pds_details(&full_pds_text, position) {
+        while let Some((pds_size, pds_id, pds_value)) = pds_details(full_pds_text, position) {
             pds_values.insert(pds_id.to_string(), pds_value.to_string());
 
             position = position + PDS_LEN_SIZE + PDS_ID_SIZE + pds_size;

@@ -29,6 +29,10 @@ impl Message {
         String::from_utf8_lossy(&self.value).to_string()
     }
 
+    pub fn get_value(&self) -> &Vec<u8> {
+        &self.value
+    }
+
     pub fn get_label(&self) -> String {
         self.label.to_string()
     }

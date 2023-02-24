@@ -158,7 +158,6 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
 
     pub fn process_bitmap(bitmap_bytes: &[u8]) -> BitArray<u64, U128> {
         let bitmap = &bitmap_bytes[0..16]; //this is taking into account that there will always be a secundary bitmap
-        
 
         BitArray::<u64, U128>::from_bytes(bitmap)
     }
@@ -286,6 +285,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     tag_len,
                     exist: true,
                     iso_field_label: Some(iso_field.label.clone()), //TODO use the reference instead of cloning everytime
+                    char_type: iso_field.char_type.clone(),
                 }
             } else {
                 FieldPayload::default()

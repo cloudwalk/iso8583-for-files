@@ -13,6 +13,7 @@ pub mod iso_specs;
 pub mod pds;
 
 use crate::iso_specs::Category;
+use crate::iso_field::FieldCharType;
 use eyre::{eyre, Result};
 use std::collections::HashMap;
 use std::fmt;
@@ -22,6 +23,7 @@ use strum::{EnumProperty, IntoEnumIterator};
 pub struct Message {
     label: String,
     value: Vec<u8>,
+    char_type: FieldCharType,
 }
 
 impl Message {
@@ -31,6 +33,10 @@ impl Message {
 
     pub fn get_value(&self) -> &Vec<u8> {
         &self.value
+    }
+
+    pub fn get_char_type(&self) -> &FieldCharType {
+        &self.char_type
     }
 
     pub fn get_label(&self) -> String {
@@ -217,6 +223,7 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
             let parsed_message = Message {
                 label: field.iso_field_label.clone().unwrap(),
                 value: field.iso_field_value(&clean_payload[current_message_pointer..]),
+                char_type: field.char_type.clone(),
             };
 
             if let Some(matched_category) = Group::get_category(parsed_message.clone()) {

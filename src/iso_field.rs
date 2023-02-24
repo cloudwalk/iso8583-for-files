@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub enum FieldCharType {
     Iso8583_n,
     Iso8583_ns,
@@ -20,6 +20,11 @@ pub enum FieldCharType {
     ISO8583_z,
     Iso8583_bmps,
     Iso8583_mti,
+    Iso8583_undefined,
+}
+
+impl Default for FieldCharType {
+    fn default() -> Self { FieldCharType::Iso8583_undefined }
 }
 
 impl FieldCharType {
@@ -37,6 +42,7 @@ impl FieldCharType {
             "z" => Some(FieldCharType::ISO8583_z),
             "bmps" => Some(FieldCharType::Iso8583_bmps),
             "mti" => Some(FieldCharType::Iso8583_mti),
+            "undefined" => Some(FieldCharType::Iso8583_undefined),
             _ => None,
         }
     }
@@ -55,6 +61,7 @@ impl FieldCharType {
             &FieldCharType::ISO8583_z => "z",
             &FieldCharType::Iso8583_bmps => "bmps",
             &FieldCharType::Iso8583_mti => "mti",
+            &FieldCharType::Iso8583_undefined => "undefined",
         }
     }
 }
@@ -122,6 +129,7 @@ impl IsoField {
 #[derive(Debug, Default)]
 pub struct FieldPayload {
     pub iso_field_label: Option<String>,
+    pub char_type: FieldCharType,
     pub exist: bool,
     pub index: usize,
     pub len: usize,

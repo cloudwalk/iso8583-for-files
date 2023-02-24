@@ -35,6 +35,10 @@ impl Message {
         &self.value
     }
 
+    pub fn get_char_type(&self) -> &FieldCharType {
+        &self.char_type
+    }
+
     pub fn get_label(&self) -> String {
         self.label.to_string()
     }

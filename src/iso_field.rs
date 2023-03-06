@@ -6,12 +6,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use serde::Serializer;
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub enum FieldCharType {
     Iso8583_n,
     Iso8583_ns,
     Iso8583_xn,
-    ISO8583_a,
+    Iso8583_a,
     Iso8583_an,
     Iso8583_ans,
     Iso8583_ansb,
@@ -33,7 +35,7 @@ impl FieldCharType {
             "n" => Some(FieldCharType::Iso8583_n),
             "ns" => Some(FieldCharType::Iso8583_ns),
             "xs" => Some(FieldCharType::Iso8583_xn),
-            "a" => Some(FieldCharType::ISO8583_a),
+            "a" => Some(FieldCharType::Iso8583_a),
             "an" => Some(FieldCharType::Iso8583_an),
             "ans" => Some(FieldCharType::Iso8583_ans),
             "ansb" => Some(FieldCharType::Iso8583_ansb),
@@ -52,7 +54,7 @@ impl FieldCharType {
             &FieldCharType::Iso8583_n => "n",
             &FieldCharType::Iso8583_ns => "ns",
             &FieldCharType::Iso8583_xn => "xs",
-            &FieldCharType::ISO8583_a => "a",
+            &FieldCharType::Iso8583_a => "a",
             &FieldCharType::Iso8583_an => "an",
             &FieldCharType::Iso8583_ans => "ans",
             &FieldCharType::Iso8583_ansb => "ansb",
@@ -103,6 +105,7 @@ impl FieldSizeType {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IsoField {
     pub label: String,
+    pub de: String,
     pub char_type: FieldCharType,
     pub size_type: FieldSizeType,
     pub length: usize,
@@ -112,15 +115,37 @@ pub struct IsoField {
 impl IsoField {
     pub fn new(
         label: &str,
+        de: &str,
         char_type: FieldCharType,
         length: usize,
         size_type: FieldSizeType,
     ) -> IsoField {
         IsoField {
             label: String::from(label),
+            de: String::from(de),
             char_type,
             length,
             size_type,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum IPMValue {
+    u64(u64),
+    String(String),
+    Binary(Vec<u8>),
+}
+
+impl serde::Serialize for IPMValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            IPMValue::u64(num) => serializer.serialize_u64(*num),
+            IPMValue::String(s) => serializer.serialize_str(s),
+            IPMValue::Binary(b) => serializer.serialize_bytes(b),
         }
     }
 }
@@ -129,6 +154,7 @@ impl IsoField {
 #[derive(Debug, Default)]
 pub struct FieldPayload {
     pub iso_field_label: Option<String>,
+    pub iso_field_de: String,
     pub char_type: FieldCharType,
     pub exist: bool,
     pub index: usize,
@@ -139,5 +165,36 @@ pub struct FieldPayload {
 impl FieldPayload {
     pub fn iso_field_value<'a>(&self, buffer: &'a [u8]) -> Vec<u8> {
         buffer[self.index + self.tag_len..self.index + self.len].to_vec()
+    }
+
+    pub fn get_ipm_value(&self, buffer: &[u8]) -> IPMValue {
+        let bytes = self.iso_field_value(buffer);
+
+        if self.is_number() {
+            let utf8_string = String::from_utf8(bytes).unwrap();
+
+            let num = utf8_string.parse::<u64>().unwrap();
+
+            IPMValue::u64(num)
+        } else if self.is_string() {
+            let utf8_string = String::from_utf8(bytes).unwrap();
+
+            IPMValue::String(utf8_string)
+        } else {
+            IPMValue::Binary(bytes)
+        }
+    }
+
+    fn is_number(&self) -> bool {
+        self.char_type == FieldCharType::Iso8583_n
+            || self.char_type == FieldCharType::Iso8583_mti
+    }
+
+    fn is_string(&self) -> bool {
+        self.char_type == FieldCharType::Iso8583_ns
+            || self.char_type == FieldCharType::Iso8583_ans
+            || self.char_type == FieldCharType::Iso8583_anp
+            || self.char_type == FieldCharType::Iso8583_an
+            || self.char_type == FieldCharType::Iso8583_a
     }
 }

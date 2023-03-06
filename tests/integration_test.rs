@@ -122,3 +122,21 @@ fn parse_t113_deblocked_sample() {
         println!("\n\n{:?}\n\n", &group.pds);
     }
 }
+
+#[test]
+fn parse_r119_binary() {
+    let file_name = "tests/R119_files_processor.IPM";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+
+    for group in iso8583_file.groups.iter() {
+        println!("{:?}", group.data_elements);
+        println!("{:?}", group.pds);
+    }
+}

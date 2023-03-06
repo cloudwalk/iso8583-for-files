@@ -285,6 +285,7 @@ impl<'a, 'b> IsoMsg<'a, 'b> {
                     tag_len,
                     exist: true,
                     iso_field_label: Some(iso_field.label.clone()), //TODO use the reference instead of cloning everytime
+                    iso_field_de: iso_field.de.clone(),
                     char_type: iso_field.char_type.clone(),
                 }
             } else {

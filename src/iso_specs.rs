@@ -164,774 +164,903 @@ impl IsoSpecs {
         let h = vec![
             IsoField::new(
                 "Message Type Indicator",
+                "mti",
                 FieldCharType::Iso8583_mti,
                 4,
                 FieldSizeType::Fixed,
             ), // Message Type Indicator
             IsoField::new(
-                "Bitmap",
+                "Bitmaps",
+                "bitmaps", // Primary Bitmap (8 bytes) + DE 1 (8 bytes) = 16 bytes
                 FieldCharType::Iso8583_bmps,
                 16,
                 FieldSizeType::BitMap,
             ), // Bitmap
             IsoField::new(
                 "Primary Account Number",
-                FieldCharType::Iso8583_ns,
+                "2", // DE 2
+                FieldCharType::Iso8583_ns, // Using ns due to pans with `*`
                 19,
                 FieldSizeType::LlVar,
             ), // Primary Account Number
             IsoField::new(
                 "Processing Code",
-                FieldCharType::Iso8583_ns,
+                "3", // DE 3
+                FieldCharType::Iso8583_n,
                 6,
                 FieldSizeType::Fixed,
             ), // Processing Code
             IsoField::new(
                 "Amount, Txn",
-                FieldCharType::Iso8583_ns,
+                "4", // DE 4
+                FieldCharType::Iso8583_n,
                 12,
                 FieldSizeType::Fixed,
             ), // Amount, Txn
             IsoField::new(
                 "Amount, Reconciliation",
-                FieldCharType::Iso8583_ns,
+                "5", // DE 5
+                FieldCharType::Iso8583_n,
                 12,
                 FieldSizeType::Fixed,
             ), // Amount, Reconciliation
             IsoField::new(
                 "Amount, Cardholder Billing",
-                FieldCharType::Iso8583_ns,
+                "6", // DE 6
+                FieldCharType::Iso8583_n,
                 12,
                 FieldSizeType::Fixed,
             ), // Amount, Cardholder Billing
             IsoField::new(
                 "Date and Time, Transmission",
+                "7", // DE 7
                 FieldCharType::Iso8583_ns,
                 10,
                 FieldSizeType::Fixed,
             ), // Date and Time, Transmission
             IsoField::new(
                 "Amount, Cardholder Billing Fee",
-                FieldCharType::Iso8583_ns,
+                "8", // DE 8
+                FieldCharType::Iso8583_n,
                 8,
                 FieldSizeType::Fixed,
             ), // Amount, Cardholder Billing Fee
             IsoField::new(
                 "Conversion Rate, Reconciliation",
-                FieldCharType::Iso8583_ns,
+                "9", // DE 9
+                FieldCharType::Iso8583_n,
                 8,
                 FieldSizeType::Fixed,
             ), // Conversion Rate, Reconciliation
             IsoField::new(
                 "Conversion Rate, Cardholder Billing",
-                FieldCharType::Iso8583_ns,
+                "10", // DE 10
+                FieldCharType::Iso8583_n,
                 8,
                 FieldSizeType::Fixed,
             ), // Conversion Rate, Cardholder Billing
             IsoField::new(
                 "Systems Trace Audit Number",
-                FieldCharType::Iso8583_ns,
+                "11", // DE 11
+                FieldCharType::Iso8583_n,
                 6,
                 FieldSizeType::Fixed,
             ), // Systems Trace Audit Number
             IsoField::new(
                 "Date and Time, Local Txn",
+                "12", // DE 12
                 FieldCharType::Iso8583_ns,
                 12,
                 FieldSizeType::Fixed,
             ), // Date and Time, Local Txn
             IsoField::new(
                 "Date, Effective",
+                "13", // DE 13
                 FieldCharType::Iso8583_ns,
                 4,
                 FieldSizeType::Fixed,
             ), // Date, Effective
             IsoField::new(
                 "Date, Expiration",
+                "14", // DE 14
                 FieldCharType::Iso8583_ns,
                 4,
                 FieldSizeType::Fixed,
             ), // Date, Expiration
             IsoField::new(
                 "Date, Settlement",
+                "15", // DE 15
                 FieldCharType::Iso8583_ns,
-                4,
+                6,
                 FieldSizeType::Fixed,
             ), // Date, Settlement
             IsoField::new(
                 "Date, Conversion",
+                "16", // DE 16
                 FieldCharType::Iso8583_ns,
                 4,
                 FieldSizeType::Fixed,
             ), // Date, Conversion
             IsoField::new(
                 "Date, Capture",
+                "17", // DE 17
                 FieldCharType::Iso8583_ns,
                 4,
                 FieldSizeType::Fixed,
             ), // Date, Capture
             IsoField::new(
                 "Merchant Type",
-                FieldCharType::Iso8583_ns,
+                "18", // DE 18
+                FieldCharType::Iso8583_n,
                 4,
                 FieldSizeType::Fixed,
             ), // Merchant Type
             IsoField::new(
                 "Country Code, Acquiring Inst",
-                FieldCharType::Iso8583_ns,
+                "19", // DE 19
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Acquiring Inst
             IsoField::new(
                 "Country Code, Primary Account Number",
-                FieldCharType::Iso8583_ns,
+                "20", // DE 20
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Primary Account Number
             IsoField::new(
                 "Country Code, Forwarding Inst",
-                FieldCharType::Iso8583_ns,
+                "21", // DE 21
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Forwarding Inst
             IsoField::new(
                 "Point of Service Data Code",
-                FieldCharType::Iso8583_ns,
+                "22", // DE 22
+                FieldCharType::Iso8583_an,
                 12,
                 FieldSizeType::Fixed,
             ), // Point of Service Data Code
             IsoField::new(
                 "Card Sequence Number",
-                FieldCharType::Iso8583_ns,
+                "23", // DE 23
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Card Sequence Number
             IsoField::new(
                 "Function Code",
-                FieldCharType::Iso8583_ns,
+                "24", // DE 24
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Function Code
             IsoField::new(
                 "Message Reason Code",
-                FieldCharType::Iso8583_ns,
+                "25", // DE 25
+                FieldCharType::Iso8583_n,
                 4,
                 FieldSizeType::Fixed,
             ), // Message Reason Code
             IsoField::new(
                 "Card Acceptor Business Code",
-                FieldCharType::Iso8583_ns,
+                "26", // DE 26
+                FieldCharType::Iso8583_n,
                 4,
                 FieldSizeType::Fixed,
             ), // Card Acceptor Business Code
             IsoField::new(
                 "Approval Code Length",
-                FieldCharType::Iso8583_ns,
+                "27", // DE 27
+                FieldCharType::Iso8583_n,
                 1,
                 FieldSizeType::Fixed,
             ), // Approval Code Length
             IsoField::new(
                 "Date, Reconciliation",
+                "28", // DE 28
                 FieldCharType::Iso8583_ns,
-                9,
+                6,
                 FieldSizeType::Fixed,
             ), // Date, Reconciliation
             IsoField::new(
                 "Reconciliation Indicator",
-                FieldCharType::Iso8583_ns,
-                9,
+                "29", // DE 29
+                FieldCharType::Iso8583_n,
+                3,
                 FieldSizeType::Fixed,
             ), // Reconciliation Indicator
             IsoField::new(
                 "Amounts, Original",
-                FieldCharType::Iso8583_ns,
+                "30", // DE 30
+                FieldCharType::Iso8583_n,
                 24,
                 FieldSizeType::Fixed,
             ), // Amounts, Original
             IsoField::new(
                 "Acquirer Reference Data",
-                FieldCharType::Iso8583_ans,
-                99,
-                FieldSizeType::LlVar,
+                "31", // DE 31
+                FieldCharType::Iso8583_ns,
+                23,
+                FieldSizeType::Fixed,
             ), // Acquirer Reference Data
             IsoField::new(
                 "Acquirer Inst Id Code",
-                FieldCharType::Iso8583_ns,
+                "32", // DE 32
+                FieldCharType::Iso8583_n,
                 11,
                 FieldSizeType::LlVar,
             ), // Acquirer Inst Id Code
             IsoField::new(
                 "Forwarding Inst Id Code",
-                FieldCharType::Iso8583_ns,
+                "33", // DE 33
+                FieldCharType::Iso8583_n,
                 11,
                 FieldSizeType::LlVar,
             ), // Forwarding Inst Id Code
             IsoField::new(
                 "Primary Account Number, Extended",
+                "34", // DE 34
                 FieldCharType::Iso8583_ns,
                 28,
                 FieldSizeType::LlVar,
             ), // Primary Account Number, Extended
             IsoField::new(
                 "Track 2 Data",
+                "35", // DE 35
                 FieldCharType::ISO8583_z,
                 37,
                 FieldSizeType::LlVar,
             ), // Track 2 Data
             IsoField::new(
                 "Track 3 Data",
+                "36", // DE 36
                 FieldCharType::ISO8583_z,
                 104,
                 FieldSizeType::LllVar,
             ), // Track 3 Data
             IsoField::new(
                 "Retrieval Reference Number",
-                FieldCharType::Iso8583_anp,
+                "37", // DE 37
+                FieldCharType::Iso8583_ans,
                 12,
                 FieldSizeType::Fixed,
             ), // Retrieval Reference Number
             IsoField::new(
                 "Approval Code",
-                FieldCharType::Iso8583_anp,
+                "38", // DE 38
+                FieldCharType::Iso8583_ans,
                 6,
                 FieldSizeType::Fixed,
             ), // Approval Code
             IsoField::new(
                 "Action Code",
-                FieldCharType::Iso8583_ns,
-                2,
+                "39", // DE 39
+                FieldCharType::Iso8583_n,
+                3,
                 FieldSizeType::Fixed,
             ), // Action Code
             IsoField::new(
                 "Service Code",
-                FieldCharType::Iso8583_ns,
+                "40", // DE 40
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Service Code
             IsoField::new(
                 "Card Acceptor Terminal Id",
+                "41", // DE 41
                 FieldCharType::Iso8583_ans,
                 8,
                 FieldSizeType::Fixed,
             ), // Card Acceptor Terminal Id
             IsoField::new(
                 "Card Acceptor Id Code",
+                "42", // DE 42
                 FieldCharType::Iso8583_ans,
                 15,
                 FieldSizeType::Fixed,
             ), // Card Acceptor Id Code
             IsoField::new(
                 "Card Acceptor Name/Location",
+                "43", // DE 43
                 FieldCharType::Iso8583_ans,
                 99,
                 FieldSizeType::LlVar,
             ), // Card Acceptor Name/Location
             IsoField::new(
-                "dditional Response Data",
+                "Additional Response Data",
+                "44", // DE 44
                 FieldCharType::Iso8583_ans,
                 99,
                 FieldSizeType::LlVar,
             ), // Additional Response Data
             IsoField::new(
                 "Track 1 Data",
+                "45", // DE 45
                 FieldCharType::Iso8583_ans,
                 76,
                 FieldSizeType::LlVar,
             ), // Track 1 Data
             IsoField::new(
                 "Amounts, Fees",
+                "46", // DE 46
                 FieldCharType::Iso8583_ans,
                 204,
                 FieldSizeType::LllVar,
             ), // Amounts, Fees
             IsoField::new(
                 "Additional Data - National",
+                "47", // DE 47
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Additional Data - National
             IsoField::new(
                 "Additional Data - Private",
-                FieldCharType::Iso8583_ans,
+                "48", // DE 48
+                FieldCharType::Iso8583_an,
                 999,
                 FieldSizeType::LllVar,
             ), // Additional Data - Private
             IsoField::new(
                 "Currency Code, Txn",
-                FieldCharType::Iso8583_an,
+                "49", // DE 49
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Currency Code, Txn
             IsoField::new(
                 "Currency Code, Reconciliation",
-                FieldCharType::Iso8583_an,
+                "50", // DE 50
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Currency Code, Reconciliation
             IsoField::new(
                 "Currency Code, Cardholder Billing",
-                FieldCharType::Iso8583_an,
+                "51", // DE 51
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Currency Code, Cardholder Billing
             IsoField::new(
                 "Personal Id Number (PIN) Data",
-                FieldCharType::Iso8583_ans,
-                16,
+                "52", // DE 52
+                FieldCharType::Iso8583_b,
+                8,
                 FieldSizeType::Fixed,
             ), // Personal Id Number (PIN) Data
             IsoField::new(
                 "Security Related Control Information",
-                FieldCharType::Iso8583_ns,
-                16,
-                FieldSizeType::Fixed,
+                "53", // DE 53
+                FieldCharType::Iso8583_b,
+                48,
+                FieldSizeType::LlVar,
             ), // Security Related Control Information
             IsoField::new(
                 "Amounts, Additional",
+                "54", // DE 54
                 FieldCharType::Iso8583_ans,
-                120,
+                240,
                 FieldSizeType::LllVar,
             ), // Amounts, Additional
             IsoField::new(
                 "IC Card System Related Data",
-                FieldCharType::Iso8583_ans,
-                999,
+                "55", // DE 55
+                FieldCharType::Iso8583_b,
+                255,
                 FieldSizeType::LllVar,
             ), // IC Card System Related Data
             IsoField::new(
                 "Original Data Elements",
-                FieldCharType::Iso8583_ans,
+                "56", // DE 56
+                FieldCharType::Iso8583_n,
                 35,
                 FieldSizeType::LlVar,
             ), // Original Data Elements
             IsoField::new(
                 "Authorization Life Cycle Code",
-                FieldCharType::Iso8583_ans,
-                999,
-                FieldSizeType::LllVar,
+                "57", // DE 57
+                FieldCharType::Iso8583_n,
+                3,
+                FieldSizeType::Fixed,
             ), // Authorization Life Cycle Code
             IsoField::new(
                 "Authorizing Agent Inst Id Cod",
-                FieldCharType::Iso8583_ans,
-                999,
-                FieldSizeType::LllVar,
+                "58", // DE 58
+                FieldCharType::Iso8583_n,
+                11,
+                FieldSizeType::LlVar,
             ), // Authorizing Agent Inst Id Code
             IsoField::new(
                 "Transport Data",
+                "59", // DE 59
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Transport Data
             IsoField::new(
                 "Reserved for National use",
+                "60", // DE 60
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "61", // DE 61
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
-                "Reserved for Private use",
+                "Additional Data 2",
+                "62", // DE 62
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for Private use
             IsoField::new(
-                "Reserved for Private use",
+                "Txn Life Cycle ID",
+                "63", // DE 63
                 FieldCharType::Iso8583_ans,
-                999,
+                16,
                 FieldSizeType::LllVar,
             ), // Reserved for Private use
             IsoField::new(
                 "Message Authentication Code Field",
+                "64", // DE 64
                 FieldCharType::Iso8583_b,
                 8,
                 FieldSizeType::Fixed,
             ), // Message Authentication Code Field
             IsoField::new(
                 "Reserved for ISO use",
+                "65", // DE 65
                 FieldCharType::Iso8583_b,
                 8,
                 FieldSizeType::Fixed,
             ), // Reserved for ISO use
             IsoField::new(
-                "Reconciliation code , Original Fees",
+                "Amounts, Original Fees",
+                "66", // DE 66
                 FieldCharType::Iso8583_ans,
-                1,
-                FieldSizeType::Fixed,
+                204,
+                FieldSizeType::LllVar,
             ), //Reconciliation code , Original Fees
             IsoField::new(
                 "Extended Payment Data",
-                FieldCharType::Iso8583_ns,
+                "67", // DE 67
+                FieldCharType::Iso8583_n,
                 2,
                 FieldSizeType::Fixed,
             ), // Extended Payment Data
             IsoField::new(
                 "Country Code, Receiving Inst",
-                FieldCharType::Iso8583_ns,
+                "68", // DE 68
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Receiving Inst
             IsoField::new(
                 "Country Code, Settlement Inst",
-                FieldCharType::Iso8583_ns,
+                "69", // DE 69
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Settlement Inst
             IsoField::new(
-                "Network Management Information Code",
-                FieldCharType::Iso8583_ns,
+                "Country Code, Authorizing Agent Inst",
+                "70", // DE 70
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
-            ), // Network Management Information Code
+            ), // Country Code, Authorizing Agent Inst
             IsoField::new(
                 "Message Number",
-                FieldCharType::Iso8583_ns,
+                "71", // DE 71
+                FieldCharType::Iso8583_n,
                 8,
                 FieldSizeType::Fixed,
             ), // Message Number
             IsoField::new(
                 "Data Record",
+                "72", // DE 72
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Data Record
             IsoField::new(
                 "Date, Action",
+                "73", // DE 73
                 FieldCharType::Iso8583_ns,
                 6,
                 FieldSizeType::Fixed,
             ), // Date, Action
             IsoField::new(
                 "Credits, Number",
-                FieldCharType::Iso8583_ns,
+                "74", // DE 74
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Credits, Number
             IsoField::new(
                 "Credits, Reversal Number",
-                FieldCharType::Iso8583_ns,
+                "75", // DE 75
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Credits, Reversal Number
             IsoField::new(
                 "Debits, Number",
-                FieldCharType::Iso8583_ns,
+                "76", // DE 76
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Debits, Number
             IsoField::new(
                 "Debits, Reversal Number",
-                FieldCharType::Iso8583_ns,
+                "77", // DE 77
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Debits, Reversal Number
             IsoField::new(
                 "Transfer, Number",
-                FieldCharType::Iso8583_ns,
+                "78", // DE 78
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Transfer, Number
             IsoField::new(
                 "Transfer, Reversal Number",
-                FieldCharType::Iso8583_ns,
+                "79", // DE 79
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Transfer, Reversal Number
             IsoField::new(
                 "Inquiries, Number",
-                FieldCharType::Iso8583_ns,
+                "80", // DE 80
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Inquiries, Number
             IsoField::new(
                 "Authorizations, Number",
-                FieldCharType::Iso8583_ns,
+                "81", // DE 81
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Authorizations, Number
             IsoField::new(
                 "Inquiries, Reversal Number",
-                FieldCharType::Iso8583_ns,
+                "82", // DE 82
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Inquiries, Reversal Number
             IsoField::new(
                 "Payments, Number",
-                FieldCharType::Iso8583_ns,
+                "83", // DE 83
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Payments, Number
             IsoField::new(
                 "Payments, Reversal Number",
-                FieldCharType::Iso8583_ns,
+                "84", // DE 84
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Payments, Reversal Number
             IsoField::new(
                 "Fee Collections, Number",
-                FieldCharType::Iso8583_ns,
+                "85", // DE 85
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Fee Collections, Number
             IsoField::new(
                 "Credits, Amount",
-                FieldCharType::Iso8583_ns,
+                "86", // DE 86
+                FieldCharType::Iso8583_n,
                 16,
                 FieldSizeType::Fixed,
             ), // Credits, Amount
             IsoField::new(
                 "Credits, Reversal Amount",
-                FieldCharType::Iso8583_ns,
+                "87", // DE 87
+                FieldCharType::Iso8583_n,
                 16,
                 FieldSizeType::Fixed,
             ), // Credits, Reversal Amount
             IsoField::new(
                 "Debits, Amount",
-                FieldCharType::Iso8583_ns,
+                "88", // DE 88
+                FieldCharType::Iso8583_n,
                 16,
                 FieldSizeType::Fixed,
             ), // Debits, Amount
             IsoField::new(
                 "Debits, Reversal Amount",
-                FieldCharType::Iso8583_ns,
+                "89", // DE 89
+                FieldCharType::Iso8583_n,
                 16,
                 FieldSizeType::Fixed,
             ), // Debits, Reversal Amount
             IsoField::new(
                 "Authorizations, Reversal Number",
-                FieldCharType::Iso8583_ns,
-                42,
+                "90", // DE 90
+                FieldCharType::Iso8583_n,
+                10,
                 FieldSizeType::Fixed,
             ), // Authorizations, Reversal Number
             IsoField::new(
                 "Country Code, Txn Destination Inst",
-                FieldCharType::Iso8583_ns,
+                "91", // DE 91
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Txn Destination Inst
             IsoField::new(
                 "Country Code, Txn Originator Inst",
-                FieldCharType::Iso8583_ns,
+                "92", // DE 92
+                FieldCharType::Iso8583_n,
                 3,
                 FieldSizeType::Fixed,
             ), // Country Code, Txn Originator Inst
             IsoField::new(
                 "Txn Destination Inst Id Code",
-                FieldCharType::Iso8583_ns,
+                "93", // DE 93
+                FieldCharType::Iso8583_n,
                 11,
                 FieldSizeType::LlVar,
             ), // Txn Destination Inst Id Code
             IsoField::new(
                 "Txn Originator Inst Id Code",
-                FieldCharType::Iso8583_ns,
+                "94", // DE 94
+                FieldCharType::Iso8583_n,
                 11,
                 FieldSizeType::LlVar,
             ), // Txn Originator Inst Id Code
             IsoField::new(
                 "Card Issuer Reference Data",
-                FieldCharType::Iso8583_ans,
-                42,
+                "95", // DE 95
+                FieldCharType::Iso8583_n,
+                10,
                 FieldSizeType::LlVar,
             ), // Card Issuer Reference Data
             IsoField::new(
                 "Key Management Data",
+                "96", // DE 96
                 FieldCharType::Iso8583_b,
                 999,
                 FieldSizeType::LllVar,
             ), // Key Management Data
             IsoField::new(
                 "Amount, Net Reconciliation",
+                "97", // DE 97
                 FieldCharType::Iso8583_xn,
                 17,
                 FieldSizeType::Fixed,
             ), // Amount, Net Reconciliation
             IsoField::new(
                 "Payee",
+                "98", // DE 98
                 FieldCharType::Iso8583_ans,
                 25,
                 FieldSizeType::Fixed,
             ), // Payee
             IsoField::new(
                 "Settlement Inst Id Code",
+                "99", // DE 99
                 FieldCharType::Iso8583_an,
                 11,
                 FieldSizeType::LlVar,
             ), // Settlement Inst Id Code
             IsoField::new(
                 "Receiving Inst Id Code",
-                FieldCharType::Iso8583_ns,
+                "100", // DE 100
+                FieldCharType::Iso8583_n,
                 11,
                 FieldSizeType::LlVar,
             ), // Receiving Inst Id Code
             IsoField::new(
                 "File Name",
+                "101", // DE 101
                 FieldCharType::Iso8583_ans,
                 17,
                 FieldSizeType::LlVar,
             ), // File Name
             IsoField::new(
                 "Account Id 1",
+                "102", // DE 102
                 FieldCharType::Iso8583_ans,
                 28,
                 FieldSizeType::LlVar,
             ), // Account Id 1
             IsoField::new(
                 "Account Id 2",
+                "103", // DE 103
                 FieldCharType::Iso8583_ans,
                 28,
                 FieldSizeType::LlVar,
             ), // Account Id 2
             IsoField::new(
                 "Txn Description",
+                "104", // DE 104
                 FieldCharType::Iso8583_ans,
-                255,
+                100,
                 FieldSizeType::LllVar,
             ), // Txn Description
             IsoField::new(
                 "Credits, Chargeback Amount",
-                FieldCharType::Iso8583_ns,
+                "105", // DE 105
+                FieldCharType::Iso8583_n,
                 16,
                 FieldSizeType::Fixed,
             ), // Credits, Chargeback Amount
             IsoField::new(
                 "Debits, Chargeback Amount",
-                FieldCharType::Iso8583_ns,
+                "106", // DE 106
+                FieldCharType::Iso8583_n,
                 16,
                 FieldSizeType::Fixed,
             ), // Debits, Chargeback Amount
             IsoField::new(
                 "Credits, Chargeback Number",
-                FieldCharType::Iso8583_ns,
+                "107", // DE 107
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Credits, Chargeback Number
             IsoField::new(
                 "Debits, Chargeback Number",
-                FieldCharType::Iso8583_ns,
+                "108", // DE 108
+                FieldCharType::Iso8583_n,
                 10,
                 FieldSizeType::Fixed,
             ), // Debits, Chargeback Number
             IsoField::new(
                 "Credits, Fee Amounts",
+                "109", // DE 109
                 FieldCharType::Iso8583_ans,
                 84,
                 FieldSizeType::LlVar,
             ), // Credits, Fee Amounts
             IsoField::new(
                 "Debits, Fee Amounts",
+                "110", // DE 110
                 FieldCharType::Iso8583_ans,
                 84,
                 FieldSizeType::LlVar,
             ), // Debits, Fee Amounts
             IsoField::new(
-                "Reserved for ISO use",
-                FieldCharType::Iso8583_ns,
+                "Amount, Currency Conversion Assessment",
+                "111", // DE 111
+                FieldCharType::Iso8583_n,
                 12,
-                FieldSizeType::Fixed,
-            ), // Reserved for ISO use
-            IsoField::new(
-                "Reserved for ISO use",
-                FieldCharType::Iso8583_ans,
-                999,
                 FieldSizeType::LllVar,
             ), // Reserved for ISO use
             IsoField::new(
                 "Reserved for ISO use",
+                "112", // DE 112
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for ISO use
             IsoField::new(
                 "Reserved for ISO use",
+                "113", // DE 113
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for ISO use
             IsoField::new(
                 "Reserved for ISO use",
+                "114", // DE 114
+                FieldCharType::Iso8583_ans,
+                999,
+                FieldSizeType::LllVar,
+            ), // Reserved for ISO use
+            IsoField::new(
+                "Reserved for ISO use",
+                "115", // DE 115
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for ISO use
             IsoField::new(
                 "Reserved for National use",
+                "116", // DE 116
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "117", // DE 117
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "118", // DE 118
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "119", // DE 119
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "120", // DE 120
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "121", // DE 121
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
             IsoField::new(
                 "Reserved for National use",
+                "122", // DE 122
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for National use
+            IsoField::new(
+                "Additional Data 3",
+                "123", // DE 123
+                FieldCharType::Iso8583_ans,
+                999,
+                FieldSizeType::LllVar,
+            ), // Additional Data 3
+            IsoField::new(
+                "Additional Data 4)",
+                "124", // DE 124
+                FieldCharType::Iso8583_ans,
+                999,
+                FieldSizeType::LllVar,
+            ), // Additional Data 4)
+            IsoField::new(
+                "Additional Data 5",
+                "125", // DE 125
+                FieldCharType::Iso8583_ans,
+                999,
+                FieldSizeType::LllVar,
+            ), // Additional Data 5
             IsoField::new(
                 "Reserved for Private use",
+                "126", // DE 126
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
             ), // Reserved for Private use
             IsoField::new(
-                "Reserved for Private use",
+                "Network Data",
+                "127", // DE 127
                 FieldCharType::Iso8583_ans,
                 999,
                 FieldSizeType::LllVar,
-            ), // Reserved for Private use
-            IsoField::new(
-                "Reserved for Private use",
-                FieldCharType::Iso8583_ans,
-                999,
-                FieldSizeType::LllVar,
-            ), // Reserved for Private use
-            IsoField::new(
-                "Reserved for Private use",
-                FieldCharType::Iso8583_ans,
-                999,
-                FieldSizeType::LllVar,
-            ), // Reserved for Private use
-            IsoField::new(
-                "Reserved for Private use",
-                FieldCharType::Iso8583_ans,
-                999,
-                FieldSizeType::LllVar,
-            ), // Reserved for Private use
+            ), // Network Data
             IsoField::new(
                 "Message Authentication Code Field",
+                "128", // DE 128
                 FieldCharType::Iso8583_b,
                 8,
                 FieldSizeType::Fixed,

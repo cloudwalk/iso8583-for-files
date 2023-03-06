@@ -13,7 +13,6 @@ pub mod iso_specs;
 pub mod pds;
 
 use crate::iso_specs::Category;
-use crate::iso_field::FieldCharType;
 use eyre::{eyre, Result};
 use std::collections::HashMap;
 use std::fmt;
@@ -21,22 +20,15 @@ use strum::{EnumProperty, IntoEnumIterator};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Message {
-    label: String,
-    value: Vec<u8>,
-    char_type: FieldCharType,
+    pub label: String,
+    pub value: Vec<u8>,
+    pub de: String,
+    pub ipm_value: iso_field::IPMValue,
 }
 
 impl Message {
     pub fn utf8_value(&self) -> String {
         String::from_utf8_lossy(&self.value).to_string()
-    }
-
-    pub fn get_value(&self) -> &Vec<u8> {
-        &self.value
-    }
-
-    pub fn get_char_type(&self) -> &FieldCharType {
-        &self.char_type
     }
 
     pub fn get_label(&self) -> String {
@@ -60,8 +52,9 @@ impl fmt::Display for Message {
 /// Although some messages rely on being chained, like a MessageException, linked to a FirstPresentment on a TT113 file
 #[derive(Debug, Clone, Serialize)]
 pub struct Group {
-    //FIXME this could be a hashmap just like pds, and also named to DE
+    //FIXME this could be a hashmap just like pds, and also named to DE (deprecated by data_elements field)
     pub messages: Vec<Message>,
+    pub data_elements: HashMap<String, iso_field::IPMValue>,
     //FIXME for now pds are only implemented for when de48 is present
     pub pds: HashMap<String, String>,
     pub category: Category,
@@ -216,14 +209,21 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
 
     while clean_payload.len() > (current_message_pointer + 2) {
         let mut messages_vec: Vec<Message> = vec![];
+        let mut data_elements: HashMap<String, iso_field::IPMValue> = HashMap::new();
         let mut category = Category::Unknown;
         let mut pds: HashMap<String, String> = HashMap::new();
         let iso_msg = iso_msg::IsoMsg::new(&handle, &clean_payload[current_message_pointer..]);
         for field in iso_msg.present_fields() {
+            let de = field.iso_field_de.clone();
+            let ipm_value = field.get_ipm_value(&clean_payload[current_message_pointer..]);
+
+            data_elements.insert(de.clone(), ipm_value.clone());
+
             let parsed_message = Message {
                 label: field.iso_field_label.clone().unwrap(),
                 value: field.iso_field_value(&clean_payload[current_message_pointer..]),
-                char_type: field.char_type.clone(),
+                de,
+                ipm_value,
             };
 
             if let Some(matched_category) = Group::get_category(parsed_message.clone()) {
@@ -245,6 +245,7 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
 
         let message_group = Group {
             messages: messages_vec,
+            data_elements,
             pds,
             category,
         };

@@ -136,7 +136,6 @@ fn parse_r119_binary() {
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
     for group in iso8583_file.groups.iter() {
-        println!("{:?}", group.data_elements);
-        println!("{:?}", group.pds);
+        println!("{:?}", group);
     }
 }

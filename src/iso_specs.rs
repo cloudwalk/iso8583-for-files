@@ -7,9 +7,11 @@ use strum_macros;
 #[derive(Debug, Clone, Serialize, strum_macros::EnumProperty, strum_macros::EnumIter)]
 pub enum Category {
     // File layout messages
-    #[strum(props(function_code = "697", name = "headers", kind = "file_layout_messages"))]
+    #[strum(props(mti = "1644", function_code = "697", name = "headers", kind = "file_layout_messages"))]
     Header,
+
     #[strum(props(
+        mti = "1644",
         function_code = "695",
         name = "trailers",
         kind = "file_layout_messages"
@@ -18,18 +20,23 @@ pub enum Category {
 
     // Financial messages
     #[strum(props(
+        mti = "1240",
         function_code = "200",
         name = "first_presentments",
         kind = "financial_messages"
     ))]
     FirstPresentment,
+
     #[strum(props(
+        mti = "1240",
         function_code = "205",
         name = "second_presentments_full",
         kind = "financial_messages"
     ))]
     SecondPresentmentFull,
+
     #[strum(props(
+        mti = "1240",
         function_code = "282",
         name = "second_presentments_partial",
         kind = "financial_messages"
@@ -37,6 +44,7 @@ pub enum Category {
     SecondPresentmentPartial,
 
     #[strum(props(
+        mti = "1442",
         function_code = "450",
         name = "first_chargebacks",
         kind = "financial_messages"
@@ -44,6 +52,7 @@ pub enum Category {
     FirstChargeback,
 
     #[strum(props(
+        mti = "1644",
         function_code = "696",
         name = "financial_details_addenda",
         kind = "financial_messages"
@@ -52,6 +61,7 @@ pub enum Category {
 
     // Retrieval messages
     #[strum(props(
+        mti = "1644",
         function_code = "603",
         name = "retrieval_requests",
         kind = "retrieval_messages"
@@ -59,6 +69,7 @@ pub enum Category {
     RetrievalRequest,
 
     #[strum(props(
+        mti = "1644",
         function_code = "605",
         name = "retrieval_requests_acknowledgement",
         kind = "retrieval_messages"
@@ -67,18 +78,23 @@ pub enum Category {
 
     // Reconciliation messages
     #[strum(props(
+        mti = "1644",
         function_code = "685",
         name = "financial_positions",
         kind = "reconciliation_messages"
     ))]
     FinancialPosition,
+
     #[strum(props(
+        mti = "1644",
         function_code = "688",
         name = "settlements",
         kind = "reconciliation_messages"
     ))]
     Settlement,
+
     #[strum(props(
+        mti = "1644",
         function_code = "680",
         name = "file_currencies",
         kind = "reconciliation_messages"
@@ -87,24 +103,31 @@ pub enum Category {
 
     // Administrative messages
     #[strum(props(
+        mti = "1644",
         function_code = "691",
         name = "message_exceptions",
         kind = "administrative_messages"
     ))]
     MessageException,
+
     #[strum(props(
+        mti = "1644",
         function_code = "699",
         name = "file_rejects",
         kind = "administrative_messages"
     ))]
     FileReject,
+
     #[strum(props(
+        mti = "1644",
         function_code = "693",
         name = "text_messages",
         kind = "administrative_messages"
     ))]
     TextMessage,
+
     #[strum(props(
+        mti = "1644",
         function_code = "640",
         name = "currency_updates",
         kind = "administrative_messages"
@@ -113,30 +136,39 @@ pub enum Category {
 
     // Fee collection messages
     #[strum(props(
+        mti = "1740",
         function_code = "700",
         name = "fee_collections_customer",
         kind = "fee_collection_messages"
     ))]
     FeeCollectionCustomer,
+
     #[strum(props(
+        mti = "1740",
         function_code = "780",
         name = "fee_collections_customer_return",
         kind = "fee_collection_messages"
     ))]
     FeeCollectionCustomerReturn,
+
     #[strum(props(
+        mti = "1740",
         function_code = "781",
         name = "fee_collections_customer_resubmission",
         kind = "fee_collection_messages"
     ))]
     FeeCollectionCustomerResubmission,
+
     #[strum(props(
+        mti = "1740",
         function_code = "782",
         name = "fee_collections_customer_arbitration_return",
         kind = "fee_collection_messages"
     ))]
     FeeCollectionCustomerArbitrationReturn,
+
     #[strum(props(
+        mti = "1740",
         function_code = "783",
         name = "fee_collections_clearing",
         kind = "fee_collection_messages"
@@ -144,7 +176,7 @@ pub enum Category {
     FeeCollectionClearing,
 
     // not intended to be used
-    #[strum(props(name = "unknown", kind = "unknown"))]
+    #[strum(props(mti = "unknown", function_code = "unknown", name = "unknown", kind = "unknown"))]
     Unknown,
 }
 

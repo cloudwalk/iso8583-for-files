@@ -6,22 +6,37 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use super::*;
 use serde::Serializer;
+use strum_macros;
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, strum_macros::EnumProperty)]
 pub enum FieldCharType {
+    #[strum(props(content_type = "number"))]
     Iso8583_n,
+    #[strum(props(content_type = "string"))]
     Iso8583_ns,
+    #[strum(props(content_type = "string"))]
     Iso8583_xn,
+    #[strum(props(content_type = "string"))]
     Iso8583_a,
+    #[strum(props(content_type = "string"))]
     Iso8583_an,
+    #[strum(props(content_type = "string"))]
     Iso8583_ans,
+    #[strum(props(content_type = "binary"))]
     Iso8583_ansb,
+    #[strum(props(content_type = "string"))]
     Iso8583_anp,
+    #[strum(props(content_type = "binary"))]
     Iso8583_b,
-    ISO8583_z,
+    #[strum(props(content_type = "binary"))]
+    Iso8583_z,
+    #[strum(props(content_type = "binary"))]
     Iso8583_bmps,
+    #[strum(props(content_type = "string"))]
     Iso8583_mti,
+    #[strum(props(content_type = "binary"))]
     Iso8583_undefined,
 }
 
@@ -41,7 +56,7 @@ impl FieldCharType {
             "ansb" => Some(FieldCharType::Iso8583_ansb),
             "anp" => Some(FieldCharType::Iso8583_anp),
             "b" => Some(FieldCharType::Iso8583_b),
-            "z" => Some(FieldCharType::ISO8583_z),
+            "z" => Some(FieldCharType::Iso8583_z),
             "bmps" => Some(FieldCharType::Iso8583_bmps),
             "mti" => Some(FieldCharType::Iso8583_mti),
             "undefined" => Some(FieldCharType::Iso8583_undefined),
@@ -60,7 +75,7 @@ impl FieldCharType {
             &FieldCharType::Iso8583_ansb => "ansb",
             &FieldCharType::Iso8583_anp => "anp",
             &FieldCharType::Iso8583_b => "b",
-            &FieldCharType::ISO8583_z => "z",
+            &FieldCharType::Iso8583_z => "z",
             &FieldCharType::Iso8583_bmps => "bmps",
             &FieldCharType::Iso8583_mti => "mti",
             &FieldCharType::Iso8583_undefined => "undefined",
@@ -105,7 +120,7 @@ impl FieldSizeType {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct IsoField {
     pub label: String,
-    pub de: String,
+    pub label_id: String,
     pub char_type: FieldCharType,
     pub size_type: FieldSizeType,
     pub length: usize,
@@ -115,14 +130,14 @@ pub struct IsoField {
 impl IsoField {
     pub fn new(
         label: &str,
-        de: &str,
+        label_id: &str,
         char_type: FieldCharType,
         length: usize,
         size_type: FieldSizeType,
     ) -> IsoField {
         IsoField {
             label: String::from(label),
-            de: String::from(de),
+            label_id: String::from(label_id),
             char_type,
             length,
             size_type,
@@ -135,6 +150,16 @@ pub enum IPMValue {
     u64(u64),
     String(String),
     Binary(Vec<u8>),
+}
+
+impl IPMValue {
+    pub fn get_string(&self) -> String {
+        match self {
+            IPMValue::u64(num) => format!("{num}"),
+            IPMValue::String(s) => s.to_owned(),
+            IPMValue::Binary(b) => format!("{b:?}"),
+        }
+    }
 }
 
 impl serde::Serialize for IPMValue {
@@ -154,7 +179,7 @@ impl serde::Serialize for IPMValue {
 #[derive(Debug, Default)]
 pub struct FieldPayload {
     pub iso_field_label: Option<String>,
-    pub iso_field_de: String,
+    pub iso_field_label_id: String,
     pub char_type: FieldCharType,
     pub exist: bool,
     pub index: usize,
@@ -167,34 +192,21 @@ impl FieldPayload {
         buffer[self.index + self.tag_len..self.index + self.len].to_vec()
     }
 
-    pub fn get_ipm_value(&self, buffer: &[u8]) -> IPMValue {
+    pub fn get_ipm_value(&self, buffer: &[u8]) -> eyre::Result<IPMValue> {
         let bytes = self.iso_field_value(buffer);
 
-        if self.is_number() {
-            let utf8_string = String::from_utf8(bytes).unwrap();
+        if self.char_type.get_str("content_type") == Some("string") {
+            let utf8_string = String::from_utf8(bytes)?;
 
-            let num = utf8_string.parse::<u64>().unwrap();
+            Ok(IPMValue::String(utf8_string))
+        } else if self.char_type.get_str("content_type") == Some("number") {
+            let utf8_string = String::from_utf8(bytes)?;
 
-            IPMValue::u64(num)
-        } else if self.is_string() {
-            let utf8_string = String::from_utf8(bytes).unwrap();
+            let num = utf8_string.parse::<u64>()?;
 
-            IPMValue::String(utf8_string)
+            Ok(IPMValue::u64(num))
         } else {
-            IPMValue::Binary(bytes)
+            Ok(IPMValue::Binary(bytes))
         }
-    }
-
-    fn is_number(&self) -> bool {
-        self.char_type == FieldCharType::Iso8583_n
-            || self.char_type == FieldCharType::Iso8583_mti
-    }
-
-    fn is_string(&self) -> bool {
-        self.char_type == FieldCharType::Iso8583_ns
-            || self.char_type == FieldCharType::Iso8583_ans
-            || self.char_type == FieldCharType::Iso8583_anp
-            || self.char_type == FieldCharType::Iso8583_an
-            || self.char_type == FieldCharType::Iso8583_a
     }
 }

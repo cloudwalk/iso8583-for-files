@@ -22,8 +22,6 @@ use strum::{EnumProperty, IntoEnumIterator};
 pub struct Message {
     pub label: String,
     pub value: Vec<u8>,
-    pub de: String,
-    pub ipm_value: iso_field::IPMValue,
 }
 
 impl Message {
@@ -52,12 +50,13 @@ impl fmt::Display for Message {
 /// Although some messages rely on being chained, like a MessageException, linked to a FirstPresentment on a TT113 file
 #[derive(Debug, Clone, Serialize)]
 pub struct Group {
-    //FIXME this could be a hashmap just like pds, and also named to DE (deprecated by data_elements field)
-    pub messages: Vec<Message>,
+    pub category: Category,
+    pub mti: String,
+    pub primary_bitmap: [u8; 8],
     pub data_elements: HashMap<String, iso_field::IPMValue>,
     //FIXME for now pds are only implemented for when de48 is present
     pub pds: HashMap<String, String>,
-    pub category: Category,
+    pub messages: Vec<Message>,
 }
 
 impl Group {
@@ -71,29 +70,19 @@ impl Group {
         Ok(messages_hash)
     }
 
-    fn get_category(function_code_message: Message) -> Option<Category> {
-        if function_code_message.label != "Function Code" {
-            return None;
-        }
+    fn get_category(mti: &str, ipm_function_code: &iso_field::IPMValue) -> Category {
+        let mut category = Category::Unknown;
 
-        //XXX move this to the initialization
-        let mut category_hash = HashMap::new();
-        for category in Category::iter() {
-            match category.get_str("function_code") {
-                Some(category_function_code) => {
-                    category_hash.insert(category_function_code, category)
-                }
-                None => None,
-            };
-        }
+        let function_code = ipm_function_code.get_string();
 
-        let function_code_message_value =
-            std::str::from_utf8(&function_code_message.value).unwrap();
+        for spec_category in Category::iter() {
+            if spec_category.get_str("mti") == Some(mti)
+                && spec_category.get_str("function_code") == Some(&function_code) {
+                category = spec_category;
+            }
+        };
 
-        match category_hash.get(function_code_message_value) {
-            Some(category) => Some(category.to_owned()),
-            None => Some(Category::Unknown),
-        }
+        category
     }
 }
 
@@ -208,34 +197,40 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
     let clean_payload = file_utils::deblock_and_remove_rdw_from(payload)?;
 
     while clean_payload.len() > (current_message_pointer + 2) {
+        let mut mti = "".to_owned();
+        let mut primary_bitmap: [u8; 8] = Default::default();
         let mut messages_vec: Vec<Message> = vec![];
         let mut data_elements: HashMap<String, iso_field::IPMValue> = HashMap::new();
-        let mut category = Category::Unknown;
         let mut pds: HashMap<String, String> = HashMap::new();
         let iso_msg = iso_msg::IsoMsg::new(&handle, &clean_payload[current_message_pointer..]);
         for field in iso_msg.present_fields() {
-            let de = field.iso_field_de.clone();
-            let ipm_value = field.get_ipm_value(&clean_payload[current_message_pointer..]);
+            let label = field.iso_field_label.clone().unwrap();
+            let value = field.iso_field_value(&clean_payload[current_message_pointer..]);
+            let label_id = field.iso_field_label_id.clone();
+            let ipm_value = field.get_ipm_value(&clean_payload[current_message_pointer..])?;
 
-            data_elements.insert(de.clone(), ipm_value.clone());
+            if label_id == "mti" {
+                mti = ipm_value.get_string();
+            } else if label_id == "bitmaps" {
+                let (primary_bitmap_slice, secondary_bitmap_slice) = value.split_at(8);
+
+                primary_bitmap = primary_bitmap_slice.try_into()?;
+
+                data_elements.insert("001".to_owned(), iso_field::IPMValue::Binary(secondary_bitmap_slice.to_vec()));
+            } else {
+                data_elements.insert(label_id, ipm_value);
+            }
 
             let parsed_message = Message {
-                label: field.iso_field_label.clone().unwrap(),
-                value: field.iso_field_value(&clean_payload[current_message_pointer..]),
-                de,
-                ipm_value,
+                label,
+                value,
             };
-
-            if let Some(matched_category) = Group::get_category(parsed_message.clone()) {
-                category = matched_category
-            }
 
             if let Some(matched_pds_values) = pds::get_pds_values(parsed_message.clone())? {
                 pds = matched_pds_values
             }
 
-            let mut parsed_message_vec = vec![parsed_message];
-            messages_vec.append(&mut parsed_message_vec);
+            messages_vec.append(&mut vec![parsed_message]);
 
             if check_for_repeated_messages(&messages_vec) {
                 return Err(eyre!("duplicated message should not exist on iso8583",));
@@ -243,14 +238,17 @@ pub fn parse_file<'a>(payload: Vec<u8>) -> Result<Iso8583File> {
         }
         current_message_pointer += iso_msg.length();
 
+        let category = Group::get_category(&mti, &data_elements["024"]);
+
         let message_group = Group {
-            messages: messages_vec,
+            category,
+            mti,
+            primary_bitmap,
             data_elements,
             pds,
-            category,
+            messages: messages_vec,
         };
-        let mut new_message_group_vec = vec![message_group];
-        message_groups.append(&mut new_message_group_vec);
+        message_groups.append(&mut vec![message_group]);
     }
     let iso8583_file = Iso8583File::new(message_groups)?;
 

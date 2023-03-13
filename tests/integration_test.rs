@@ -1,4 +1,5 @@
 use iso8583::iso_msg::IsoMsg;
+use iso8583::iso_specs::IsoSpecs;
 #[cfg(test)]
 use std::collections::HashMap;
 #[cfg(test)]
@@ -15,7 +16,7 @@ fn parse_bitmap_binary() {
 
 #[test]
 fn parse_r111_binary() {
-    let file_name = "tests/R111_sample.ipm";
+    let file_name = "tests/R119_files_processor.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -28,7 +29,7 @@ fn parse_r111_binary() {
 
 #[test]
 fn parse_invalid_file() {
-    let file_name = "tests/T112_sample.ipm";
+    let file_name = "tests/T112_empty.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -41,7 +42,7 @@ fn parse_invalid_file() {
 
 #[test]
 fn parse_t113_blocked_with_rdw_binary() {
-    let file_name = "tests/T113_sample.ipm";
+    let file_name = "tests/T121_sample_2.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -54,7 +55,6 @@ fn parse_t113_blocked_with_rdw_binary() {
     let categories_indexes = iso8583_file.clone().categories_indexes;
 
     dbg!(&iso8583_file.clone().messages_count());
-    dbg!(categories_indexes.get("message_exceptions").unwrap());
 
     assert_eq!(
         categories_indexes.get("financial_positions").unwrap(),
@@ -63,12 +63,12 @@ fn parse_t113_blocked_with_rdw_binary() {
 
     assert_eq!(categories_indexes.get("headers").unwrap(), &vec![0usize]);
 
-    assert_eq!(iso8583_file.groups[2].messages[5].utf8_value(), "986");
+    assert_eq!(iso8583_file.messages[2].data_elements["050"].get_string(), "986");
 }
 
 #[test]
 fn search_and_filter_t113_deblocked_sample() {
-    let file_name = "tests/T113_sample.ipm";
+    let file_name = "tests/T121_sample.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -81,13 +81,14 @@ fn search_and_filter_t113_deblocked_sample() {
     let searched = iso8583_file.search(HashMap::from([("Function Code".to_string(), vec!["200".to_string(), "691".to_string()])]));
 
     dbg!(searched);
-    // assert_eq!(searched.groups.len(), 2318);
+    // assert_eq!(searched.messages.len(), 2318);
     // let filtered = iso8583_file.filter(vec!["Message Number"]);
 }
 
 #[test]
-fn parse_t113_deblocked_sample() {
-    let file_name = "tests/T113_sample.ipm";
+fn parse_t121_deblocked_sample() {
+    // T121 is the T113 file in the test environment
+    let file_name = "tests/T121_sample.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -104,28 +105,43 @@ fn parse_t113_deblocked_sample() {
     let exceptions = categories_indexes.get("message_exceptions").unwrap();
     for g in exceptions {
         println!("\n\n");
-        let original_group = iso8583_file.clone().groups.get(*g + 1).unwrap().clone();
-        let original_messages = original_group.messages.clone();
-        for m in original_messages {
-            println!("orig: {} => {}", &m.get_label(), &m.utf8_value());
+        let original_group = iso8583_file.clone().messages.get(*g + 1).unwrap().clone();
+        let original_messages = original_group.data_elements.clone();
+        let iso_fields = IsoSpecs::define_specs();
+        let iso_fields_ref = &iso_fields;
+        for (k, v) in original_messages {
+            let current_label_id = if k == "001" {
+               "bitmaps".to_owned()
+            } else {
+               k
+            };
+            let iso_field = iso_fields_ref.into_iter().find(|field| field.label_id == current_label_id);
+            println!("orig: {} => {}", iso_field.unwrap().label, v.get_string());
         }
         println!("\n\n{:?}\n\n", &original_group.pds);
 
         println!("\n\n");
-        let group = iso8583_file.clone().groups.get(*g).unwrap().clone();
-        let messages = group.messages.clone();
-        for m in messages {
-            println!("post: {} => {}", &m.get_label(), &m.utf8_value());
+        let message = iso8583_file.clone().messages.get(*g).unwrap().clone();
+        let messages = message.data_elements.clone();
+        for (k, v) in messages {
+            let current_label_id = if k == "001" {
+               "bitmaps".to_owned()
+            } else {
+               k
+            };
+
+            let iso_field = iso_fields_ref.into_iter().find(|field| field.label_id == current_label_id);
+            println!("orig: {} => {}", iso_field.unwrap().label, v.get_string());
         }
 
-        println!("\n\n{:?}\n\n", &original_group.messages);
-        println!("\n\n{:?}\n\n", &group.pds);
+        println!("\n\n{:?}\n\n", &original_group.data_elements);
+        println!("\n\n{:?}\n\n", &message.pds);
     }
 }
 
 #[test]
 fn parse_r119_binary() {
-    let file_name = "tests/R119_files_processor.IPM";
+    let file_name = "tests/R119_files_processor.ipm";
     let mut file = File::open(file_name).expect("no file found");
     let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
 
@@ -135,7 +151,7 @@ fn parse_r119_binary() {
 
     let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
 
-    for group in iso8583_file.groups.iter() {
-        println!("{:?}", group);
+    for message in iso8583_file.messages.iter() {
+        println!("{:?}", message);
     }
 }

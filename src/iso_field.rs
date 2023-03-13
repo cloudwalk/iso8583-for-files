@@ -196,11 +196,11 @@ impl FieldPayload {
         let bytes = self.iso_field_value(buffer);
 
         if self.char_type.get_str("content_type") == Some("string") {
-            let utf8_string = String::from_utf8(bytes)?;
+            let utf8_string = String::from_utf8_lossy(&bytes).to_string();
 
             Ok(IPMValue::String(utf8_string))
         } else if self.char_type.get_str("content_type") == Some("number") {
-            let utf8_string = String::from_utf8(bytes)?;
+            let utf8_string = String::from_utf8_lossy(&bytes).to_string();
 
             let num = utf8_string.parse::<u64>()?;
 

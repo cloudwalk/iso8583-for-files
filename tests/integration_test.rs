@@ -122,8 +122,8 @@ fn parse_t121_deblocked_sample() {
 
         println!("\n\n");
         let message = iso8583_file.clone().messages.get(*g).unwrap().clone();
-        let messages = message.data_elements.clone();
-        for (k, v) in messages {
+        let data_elements = message.data_elements.clone();
+        for (k, v) in data_elements {
             let current_label_id = if k == "001" {
                "bitmaps".to_owned()
             } else {

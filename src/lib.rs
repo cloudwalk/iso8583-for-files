@@ -57,25 +57,6 @@ pub struct Message {
 }
 
 impl Message {
-    /// Returns a HashMap [data_element.label => data_element.utf8_value] of all self.data_elements
-    pub fn get_messages_hash(&self) -> Result<HashMap<String, String>> {
-        let mut data_elements: HashMap<String, String> = HashMap::new();
-        let iso_fields = iso_specs::IsoSpecs::define_specs();
-        for (k, v) in self.data_elements.clone() {
-            let current_label_id = if k == "001" {
-               "bitmaps".to_owned()
-            } else {
-               k
-            };
-            let iso_field = iso_fields.iter().find(|field| field.label_id == current_label_id).unwrap();
-
-            let label = iso_field.label.to_string();
-
-            data_elements.insert(label, v.get_string());
-        }
-        Ok(data_elements)
-    }
-
     fn get_category(mti: &str, ipm_function_code: &iso_field::IPMValue) -> Category {
         let mut category = Category::Unknown;
 

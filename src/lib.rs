@@ -57,7 +57,7 @@ pub struct Message {
 }
 
 impl Message {
-    /// Returns a HashMap [message.label => message.utf8_value] of all self.messages
+    /// Returns a HashMap [message.label_id => message.utf8_value] of all self.messages
     pub fn get_messages_hash(&self) -> Result<HashMap<String, String>> {
         let messages_hash: HashMap<String, String> = self
             .data_elements

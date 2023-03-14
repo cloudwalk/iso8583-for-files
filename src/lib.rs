@@ -57,17 +57,6 @@ pub struct Message {
 }
 
 impl Message {
-    /// Returns a HashMap [message.label_id => message.utf8_value] of all self.messages
-    pub fn get_messages_hash(&self) -> Result<HashMap<String, String>> {
-        let messages_hash: HashMap<String, String> = self
-            .data_elements
-            .clone()
-            .into_iter()
-            .map(|(k, v)| (k, v.get_string()))
-            .collect();
-        Ok(messages_hash)
-    }
-
     fn get_category(mti: &str, ipm_function_code: &iso_field::IPMValue) -> Category {
         let mut category = Category::Unknown;
 

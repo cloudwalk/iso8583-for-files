@@ -155,3 +155,20 @@ fn parse_r119_binary() {
         println!("{:?}", message);
     }
 }
+
+#[test]
+fn get_messages_hash_test() {
+    let file_name = "tests/R119_files_processor.ipm";
+    let mut file = File::open(file_name).expect("no file found");
+    let metadata = std::fs::metadata(file_name).expect("unable to read metadata");
+
+    let mut payload = vec![0; metadata.len() as usize];
+
+    file.read(&mut payload).expect("buffer overflow");
+
+    let iso8583_file: iso8583::Iso8583File = iso8583::parse_file(payload).unwrap();
+
+    for message in iso8583_file.messages.iter() {
+        println!("{:?}", message.get_messages_hash());
+    }
+}

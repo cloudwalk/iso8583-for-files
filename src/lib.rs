@@ -136,16 +136,13 @@ impl Iso8583File {
         //TODO fix the performance for the search
         // since this loops inside each message and uses a hash to find a match, this is memory intensive
         for message in self.messages {
-            let message_hash = message.get_messages_hash().expect("Unable to find message hash for message. Maybe the file is broken");
+            let message_hash = message.data_elements.clone();
             for search_key in search.keys() {
-                match message_hash.get(search_key) {
-                    Some(msg) => {
-                        if search.get(search_key).unwrap().contains(msg) {
-                            search_messages_result.push(message);
-                            break;
-                        }
-                    },
-                    None => {}
+                if let Some(msg) = message_hash.get(search_key) {
+                    if search.get(search_key).unwrap().contains(&msg.get_string()) {
+                        search_messages_result.push(message);
+                        break;
+                    }
                 }
             }
         }

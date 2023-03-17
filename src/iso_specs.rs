@@ -218,7 +218,7 @@ impl IsoSpecs {
             IsoField::new(
                 "Processing Code",
                 "003", // DE 3
-                FieldCharType::Iso8583_n,
+                FieldCharType::Iso8583_ns,
                 6,
                 FieldSizeType::Fixed,
             ), // Processing Code
